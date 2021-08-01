@@ -1,4 +1,4 @@
-# Essentials Plugin Template (c) 2020
+# Custom Values Essentials Plugin 
 
 
 ## Requirements 
