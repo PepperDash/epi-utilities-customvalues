@@ -4,7 +4,13 @@
 
 Provided under MIT license
 
-## Overview
+## Requirements 
+
+- Using standard Essentials Device Config Property which contains custom values  (strings, Ushorts, Bools)
+- Have metohds to write config values
+- Implement interface for other plugins to read and write values
+- Bridge to Simpl
+- Have console commands to store and retrieve values
 
 Fork this repo when creating a new plugin for Essentials. For more information about plugins, refer to the Essentials Wiki [Plugins](https://github.com/PepperDash/Essentials/wiki/Plugins) article.
 
