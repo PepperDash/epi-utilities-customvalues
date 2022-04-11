@@ -3,6 +3,7 @@ using PepperDash.Core;
 using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
+using PepperDash.Essentials.Core.Config;
 
 namespace Essentials.Plugin.CustomValues
 {
@@ -20,7 +21,7 @@ namespace Essentials.Plugin.CustomValues
         /// <summary>
         /// It is often desirable to store the config
         /// </summary>
-        private EssentialsPluginConfigObject _config;
+        private DeviceConfig _config;
 
         /// <summary>
         /// Plugin device constructor
@@ -28,7 +29,7 @@ namespace Essentials.Plugin.CustomValues
         /// <param name="key"></param>
         /// <param name="name"></param>
         /// <param name="config"></param>
-        public EssentialsPluginTemplateLogicDevice(string key, string name, EssentialsPluginConfigObject config)
+        public EssentialsPluginTemplateLogicDevice(string key, string name, DeviceConfig config)
             : base(config)
         {
             Debug.Console(0, this, "Constructing new {0} instance", name);

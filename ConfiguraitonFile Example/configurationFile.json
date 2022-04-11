@@ -1,0 +1,83 @@
+{
+    "system": {},
+    "system_url": "http://portal-QA.devcloud.pepperdash.com/templates/0f50640b-bc89-42d5-998f-81d137d3fc98#/template_summary",
+    "template": {
+        "devices": [
+            {
+                "type": "rmc3",
+                "name": "rmc3",
+                "group": "processor",
+                "supportedConfigModes": [
+                    "compliance",
+                    "essentials"
+                ],
+                "supportedSystemTypes": [
+                    "hudType",
+                    "presType",
+                    "vtcType",
+                    "custom"
+                ],
+                "supportsCompliance": true,
+                "properties": {
+                    "numberOfComPorts": 6,
+                    "numberOfIrPorts": 8,
+                    "numberOfRelays": 8,
+                    "numberOfDIOPorts": 8
+                },
+                "key": "processor",
+                "uid": 0
+            },
+            {
+                "key": "CustomValues",
+                "uid": 1,
+                "name": "Custom Values Essentials Plugin",
+                "type": "CustomValues",
+                "group": "plugin",
+                "properties": {
+                    "Data": {
+                        "Dict": {
+                            "label01": "MainSourceSelector",
+                            "instanceTag": "NAMED_CONTROL"
+                        },
+                        "analogValue": 37,
+                        "boolValue": true,
+                        "stringValue": "SomeString!"
+                    }
+                }
+            },
+            {
+                "key": "dsp-1-bridge",
+                "uid": 4,
+                "name": "QSC Q-Sys DSP Essentials Plugin Bridge",
+                "group": "api",
+                "type": "eiscApi",
+                "properties": {
+                    "control": {
+                        "tcpSshProperties": {
+                            "address": "127.0.0.2",
+                            "port": 0
+                        },
+                        "ipid": "1A",
+                        "method": "ipidTcp"
+                    },
+                    "devices": [
+                        {
+                            "deviceKey": "dsp-1",
+                            "joinStart": 1
+                        }
+                    ]
+                }
+            }
+        ],
+        "info": {
+            "comment": "",
+            "lastModifiedDate": "2017-03-06T23:14:40.290Z",
+            "lastUid": 8,
+            "processorType": "rmc3",
+            "requiredControlSofwareVersion": "",
+            "systemType": "huddle"
+        },
+        "rooms": [],
+        "tieLines": []
+    }
+}

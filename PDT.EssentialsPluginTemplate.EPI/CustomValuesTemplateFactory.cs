@@ -41,7 +41,7 @@ namespace Essentials.Plugin.CustomValues
 
             // In the constructor we initialize the list with the typenames that will build an instance of this device
 			// TODO [ ] Update the TypeNames for the plugin being developed
-            TypeNames = new List<string>() { "examplePluginLogicDevice" };
+            TypeNames = new List<string>() { "CustomValues" };
         }
         
 		/// <summary>
@@ -66,18 +66,8 @@ namespace Essentials.Plugin.CustomValues
                 Debug.Console(0, "[{0}] Factory: failed to read properties config for {1}", dc.Key, dc.Name);
                 return null;
             }
+			return new EssentialsPluginTemplateLogicDevice(dc.Key, dc.Name, dc);
 
-            var controlConfig = CommFactory.GetControlPropertiesConfig(dc);
-
-            if (controlConfig == null)
-            {
-                return new EssentialsPluginTemplateLogicDevice(dc.Key, dc.Name, propertiesConfig);
-            }
-            else
-            {
-                Debug.Console(0, "[{0}] Factory: Unable to get control properties from device config for {1}", dc.Key, dc.Name);
-                return null;
-            }
         }
     }
 
