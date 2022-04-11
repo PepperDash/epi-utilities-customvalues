@@ -42,13 +42,22 @@
                         "analogValue": 37,
                         "boolValue": true,
                         "stringValue": "SomeString!"
+                    },
+                    "SimplBridge": {
+                        "mappings": 
+                        [
+                            {"join": 77, "path": "analogValue"},
+                            {"join": 77, "path": "stringValue"}
+
+                        ]
                     }
+
                 }
             },
             {
-                "key": "dsp-1-bridge",
+                "key": "CustomValuesBridge",
                 "uid": 4,
-                "name": "QSC Q-Sys DSP Essentials Plugin Bridge",
+                "name": "CustomValuesBridge",
                 "group": "api",
                 "type": "eiscApi",
                 "properties": {
@@ -62,7 +71,7 @@
                     },
                     "devices": [
                         {
-                            "deviceKey": "dsp-1",
+                            "deviceKey": "CustomValues",
                             "joinStart": 1
                         }
                     ]

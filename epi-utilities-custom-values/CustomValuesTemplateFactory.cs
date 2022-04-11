@@ -15,7 +15,7 @@ namespace Essentials.Plugin.CustomValues
     /// <example>
     /// "EssentialsPluginFactoryTemplate" renamed to "MyLogicDeviceFactory"
     /// </example>
-    public class EssentialsPluginFactoryLogicDeviceTemplate : EssentialsPluginDeviceFactory<EssentialsPluginTemplateLogicDevice>
+	public class EssentialsPluginFactoryLogicDeviceTemplate : EssentialsPluginDeviceFactory<CustomValuesDevice>
     {
 		/// <summary>
 		/// Plugin device factory constructor
@@ -59,14 +59,7 @@ namespace Essentials.Plugin.CustomValues
 
             Debug.Console(1, "[{0}] Factory Attempting to create new device from type: {1}", dc.Key, dc.Type);
 
-            // get the plugin device properties configuration object & check for null 
-			var propertiesConfig = dc.Properties.ToObject<EssentialsPluginConfigObject>();
-            if (propertiesConfig == null)
-            {
-                Debug.Console(0, "[{0}] Factory: failed to read properties config for {1}", dc.Key, dc.Name);
-                return null;
-            }
-			return new EssentialsPluginTemplateLogicDevice(dc.Key, dc.Name, dc);
+			return new CustomValuesDevice(dc.Key, dc.Name, dc);
 
         }
     }
