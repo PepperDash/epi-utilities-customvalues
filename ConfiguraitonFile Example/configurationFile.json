@@ -46,8 +46,8 @@
                     "SimplBridge": {
                         "mappings": 
                         [
-                            {"join": 77, "path": "analogValue"},
-                            {"join": 77, "path": "stringValue"}
+                            {"join": 2, "path": "analogValue"},
+                            {"join": 2, "path": "stringValue"}
 
                         ]
                     }
@@ -66,7 +66,7 @@
                             "address": "127.0.0.2",
                             "port": 0
                         },
-                        "ipid": "1A",
+                        "ipid": "03",
                         "method": "ipidTcp"
                     },
                     "devices": [

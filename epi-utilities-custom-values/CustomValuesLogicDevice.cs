@@ -6,6 +6,7 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using System;
+using Newtonsoft.Json.Linq;
 
 namespace Essentials.Plugin.CustomValues
 {
@@ -39,36 +40,34 @@ namespace Essentials.Plugin.CustomValues
 				}
 			}
 		}
-        /// <summary>
-        /// Plugin device constructor
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="name"></param>
-        /// <param name="config"></param>
+
 		public CustomValuesDevice(string key, string name, DeviceConfig config)
             : base(config)
         {
             Debug.Console(0, this, "Constructing new {0} instance", name);
             _Config = config;
-
-
-			
         }
+
+		private void WriteValue(string path, ushort value)
+		{
+			Debug.Console(2, "Writing data {0} {1}", path, value);
+			_Config.Properties["Data"][path] = value;
+			SetConfig(_Config);
+		}
+
+		private void WriteValue(string path, string value)
+		{
+			Debug.Console(2, "Writing data {0} {1}", path, value);
+			_Config.Properties["Data"][path] = value;
+			SetConfig(_Config);
+			
+		}
 
 		public override bool CustomActivate()
 		{
-
 			return true; 
 		}
 
-
-        /// <summary>
-        /// Links the plugin device to the EISC bridge
-        /// </summary>
-        /// <param name="trilist"></param>
-        /// <param name="joinStart"></param>
-        /// <param name="joinMapKey"></param>
-        /// <param name="bridge"></param>
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
             var joinMap = new EssentialsPluginBridgeJoinMapTemplate(joinStart);
@@ -78,7 +77,7 @@ namespace Essentials.Plugin.CustomValues
             {
                 bridge.AddJoinMap(Key, joinMap);
             }
-
+			// bridge.CommunicationMonitor.StatusChange(
             var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
 
             if (customJoins != null)
@@ -92,17 +91,22 @@ namespace Essentials.Plugin.CustomValues
 			foreach (var map in _Properties.SimplBridge.Mappings)
 			{
 				var value = _Properties.Data.SelectToken(map.Path);
-				Debug.Console(2, "Read and mapped data {0} {1} {2} {3}", map.Path, value, map.Join, value.Type.ToString());
+				var path = map.Path;
+				ushort join = (ushort)(map.Join + joinStart - 1); 
+
+				Debug.Console(2, "Read and mapped data {0} {1} {2} {3}", map.Path, value, join, value.Type.ToString());
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
 					Debug.Console(2, "I AM INT");
-					trilist.UShortInput[map.Join].UShortValue = (ushort)value;
-
+					trilist.UShortInput[join].UShortValue = (ushort)value;
+					trilist.SetUShortSigAction(join, (x) => WriteValue(path, x));
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String)
 				{
 					Debug.Console(2, "I AM STRING");
-					trilist.StringInput[map.Join].StringValue = (ushort)value;
+					trilist.StringInput[join].StringValue = (string)value;
+					trilist.SetStringSigAction(join, (x) => WriteValue(path, x));
+
 
 				}
 
