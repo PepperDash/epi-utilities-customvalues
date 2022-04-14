@@ -43,13 +43,13 @@
                         "boolValue": true,
                         "stringValue": "SomeString!"
                     },
-                    "SimplBridge": {
-                        "mappings": 
-                        [
-                            {"join": 2, "path": "analogValue"},
-                            {"join": 2, "path": "stringValue"}
+                    
+                    "Paths": {
+                        "Integer-02": "analogValue",
+                        "String-02": "Dict",
+                        "Boolean-02": "boolValue"
 
-                        ]
+                       
                     }
 
                 }

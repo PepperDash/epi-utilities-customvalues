@@ -88,28 +88,51 @@ namespace Essentials.Plugin.CustomValues
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
 
-			foreach (var map in _Properties.SimplBridge.Mappings)
+			foreach (var path in _Properties.Paths)
 			{
-				var value = _Properties.Data.SelectToken(map.Path);
-				var path = map.Path;
-				ushort join = (ushort)(map.Join + joinStart - 1); 
+				
+				var parts = path.Key.Split('-');
+				var type = parts[0];
+				var index = ushort.Parse(parts[1]); 
 
-				Debug.Console(2, "Read and mapped data {0} {1} {2} {3}", map.Path, value, join, value.Type.ToString());
+				var value = _Properties.Data.SelectToken(path.Value);
+				//var path = map.Path;
+				ushort join = (ushort)(index + joinStart - 1); 
+
+				Debug.Console(2, "Read and mapped data {0} {1} {2} {3}", type, value, join, value.Type.ToString());
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
 					Debug.Console(2, "I AM INT");
 					trilist.UShortInput[join].UShortValue = (ushort)value;
-					trilist.SetUShortSigAction(join, (x) => WriteValue(path, x));
+					trilist.SetUShortSigAction(join, (x) => 
+						{
+							WriteValue(path.Value, x);
+							trilist.UShortInput[join].UShortValue = (ushort)_Properties.Data.SelectToken(path.Value); 
+						});
+
 				}
-				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String)
+				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String) 
 				{
 					Debug.Console(2, "I AM STRING");
 					trilist.StringInput[join].StringValue = (string)value;
-					trilist.SetStringSigAction(join, (x) => WriteValue(path, x));
+					trilist.SetStringSigAction(join, (x) =>
+							{
+								WriteValue(path.Value, x);
+								trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path.Value);
+							});
+				}
+				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
+				{
+					Debug.Console(2, "I AM STRING");
+					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
+					trilist.SetStringSigAction(join, (x) =>
+					{
+						WriteValue(path.Value, x);
+						trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path.Value);
+					});
 
 
 				}
-
 			}
             trilist.SetString(joinMap.DeviceName.JoinNumber, Name);
 

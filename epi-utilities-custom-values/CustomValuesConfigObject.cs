@@ -19,8 +19,8 @@ namespace Essentials.Plugin.CustomValues
 		[JsonProperty("data")]
 		public JToken Data { get; set; }
 
-		[JsonProperty("SimplBridge")]
-		public SimplBridge SimplBridge { get; set; }
+		[JsonProperty("paths")]
+		public Dictionary<string, string> Paths { get; set; }
 
 		/// <summary>
 		/// Constuctor
@@ -41,6 +41,10 @@ namespace Essentials.Plugin.CustomValues
 
 	}
 
+
+
+
+	// May not be used 
 	public class SimplBridge
 	{
 		[JsonProperty("ipid")]
