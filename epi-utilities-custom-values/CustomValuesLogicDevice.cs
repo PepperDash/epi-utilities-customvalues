@@ -7,6 +7,7 @@ using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using System;
 using Newtonsoft.Json.Linq;
+using Crestron.SimplSharp;
 
 namespace Essentials.Plugin.CustomValues
 {
@@ -46,6 +47,9 @@ namespace Essentials.Plugin.CustomValues
         {
             Debug.Console(0, this, "Constructing new {0} instance", name);
             _Config = config;
+			CrestronConsole.AddNewConsoleCommand(ConsoleCommand, "CustomValue", "gets/sets a CustomValue path [NewValue]", ConsoleAccessLevelEnum.AccessOperator);
+
+
         }
 
 		private void WriteValue(string path, ushort value)
@@ -60,7 +64,55 @@ namespace Essentials.Plugin.CustomValues
 			Debug.Console(2, "Writing data {0} {1}", path, value);
 			_Config.Properties["Data"][path] = value;
 			SetConfig(_Config);
+		}
+
+		private void WriteValue(string path, bool value)
+		{
+			Debug.Console(2, "Writing data {0} {1}", path, value);
+			_Config.Properties["Data"][path] = value;
+			SetConfig(_Config);
+		}
+
+		public void ConsoleCommand(string command)
+		{
+			if (string.IsNullOrEmpty(command))
+			{
+				Debug.Console(0, this, "CustomValue command requires an argument for Path and optionally a NewValue");
+				return;
+			}
+			var commandArray = command.Split(' ');
+			var path = commandArray[0];
 			
+			if (commandArray.Length == 1)
+			{
+				Debug.Console(0, this, "CustomValue Path:{0} Value:{1}", path, _Properties.Data.SelectToken(path));
+			}
+			else if (commandArray.Length == 2)
+			{
+				var value = commandArray[1];
+				try
+				{
+					var Number = ushort.Parse(value);
+					WriteValue(path, value);
+					return;
+				}
+				catch
+				{
+					Debug.Console(0, this, "CustomValue command requires an argument for Path and optionally a NewValue");
+				}
+				if (value.ToLower() == "true" || value.ToLower() == "false")
+				{
+					WriteValue(path, bool.Parse(value));
+					return;
+				}
+				else 
+				{
+					WriteValue(path, value);
+					return;
+				}
+
+			}
+
 		}
 
 		public override bool CustomActivate()
@@ -130,8 +182,16 @@ namespace Essentials.Plugin.CustomValues
 						WriteValue(path.Value, x);
 						trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path.Value);
 					});
-
-
+				}
+				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean)
+				{
+					Debug.Console(2, "I AM BOOL");
+					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
+					trilist.SetStringSigAction(join, (x) =>
+					{
+						WriteValue(path.Value, x);
+						trilist.BooleanInput[join].BoolValue = (bool)_Properties.Data.SelectToken(path.Value);
+					});
 				}
 			}
             trilist.SetString(joinMap.DeviceName.JoinNumber, Name);
