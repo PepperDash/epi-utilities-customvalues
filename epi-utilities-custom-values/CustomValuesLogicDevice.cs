@@ -132,34 +132,49 @@ namespace Essentials.Plugin.CustomValues
 			// bridge.CommunicationMonitor.StatusChange(
             var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
 
-            if (customJoins != null)
+			
+            if (customJoins == null)
             {
-                joinMap.SetCustomJoinData(customJoins);
+				Debug.Console(0, "Custom Joins not found!!!");
             }
+			
 
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
 
-			foreach (var path in _Properties.Paths)
+			//Debug.Console(0, "TEST {0}", customJoins.);
+
+			foreach (var j in customJoins)
 			{
 				
-				var parts = path.Key.Split('-');
-				var type = parts[0];
-				var index = ushort.Parse(parts[1]); 
-
-				var value = _Properties.Data.SelectToken(path.Value);
+				//var parts = path.Key.Split('-');
+				//var type = parts[0];
+				var path = j.Key;
+				uint? index = j.Value.JoinNumber;
+				JToken value = _Properties.Data.SelectToken(path);
+				if (index = 0)
+				{
+					Debug.Console(0, "Missing Join number for Key {0}", path);
+					continue;
+				}
+				if (value == null)
+				{
+					Debug.Console(0, "Cannot find value for Key {0}", path);
+					continue;
+				}
+				
 				//var path = map.Path;
 				ushort join = (ushort)(index + joinStart - 1); 
 
-				Debug.Console(2, "Read and mapped data {0} {1} {2} {3}", type, value, join, value.Type.ToString());
+				Debug.Console(2, "Read and mapped data {0} {1} {2}",  value, join, value.Type.ToString());
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
 					Debug.Console(2, "I AM INT");
 					trilist.UShortInput[join].UShortValue = (ushort)value;
 					trilist.SetUShortSigAction(join, (x) => 
 						{
-							WriteValue(path.Value, x);
-							trilist.UShortInput[join].UShortValue = (ushort)_Properties.Data.SelectToken(path.Value); 
+							WriteValue(path, x);
+							trilist.UShortInput[join].UShortValue = (ushort)_Properties.Data.SelectToken(path); 
 						});
 
 				}
@@ -169,8 +184,8 @@ namespace Essentials.Plugin.CustomValues
 					trilist.StringInput[join].StringValue = (string)value;
 					trilist.SetStringSigAction(join, (x) =>
 							{
-								WriteValue(path.Value, x);
-								trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path.Value);
+								WriteValue(path, x);
+								trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path);
 							});
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
@@ -179,8 +194,8 @@ namespace Essentials.Plugin.CustomValues
 					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
 					trilist.SetStringSigAction(join, (x) =>
 					{
-						WriteValue(path.Value, x);
-						trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path.Value);
+						WriteValue(path, x);
+						trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path);
 					});
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean)
@@ -189,8 +204,8 @@ namespace Essentials.Plugin.CustomValues
 					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
 					trilist.SetStringSigAction(join, (x) =>
 					{
-						WriteValue(path.Value, x);
-						trilist.BooleanInput[join].BoolValue = (bool)_Properties.Data.SelectToken(path.Value);
+						WriteValue(path, x);
+						trilist.BooleanInput[join].BoolValue = (bool)_Properties.Data.SelectToken(path);
 					});
 				}
 			}

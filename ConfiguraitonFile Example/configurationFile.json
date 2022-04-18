@@ -59,7 +59,7 @@
                 "uid": 4,
                 "name": "CustomValuesBridge",
                 "group": "api",
-                "type": "eiscApi",
+                "type": "eiscApiAdvanced",
                 "properties": {
                     "control": {
                         "tcpSshProperties": {
@@ -72,7 +72,9 @@
                     "devices": [
                         {
                             "deviceKey": "CustomValues",
-                            "joinStart": 1
+                            "joinStart": 1,
+                            "joinMapKey": "customValues"
+                            
                         }
                     ]
                 }
@@ -87,6 +89,165 @@
             "systemType": "huddle"
         },
         "rooms": [],
-        "tieLines": []
+        "tieLines": [],
+        "joinMaps":{
+            "customValues":{
+              "analogValue": {
+                "joinNumber": 2,
+                "joinSpan": 1
+              },
+              "ProcessorIp1": {
+                "joinSpan": 1,
+                "attributeName": "Info - Processor - IP 1"
+              },
+              "Processor": {
+                "joinNumber": 80,
+                "joinSpan": 1,
+                "attributeName": "Info - Processor - IP 1"
+              },
+              "stringValue": {
+                "joinNumber": 2,
+                "joinSpan": 1
+              }
+            },
+            "fusion":{
+                "ProcessorIp1": {
+                  "joinNumber": 80,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - IP 1"
+                },
+                "ProcessorIp2": {
+                  "joinNumber": 81,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - IP 2"
+                },
+                "ProcessorGateway": {
+                  "joinNumber": 82,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - Gateway"
+                },
+                "ProcessorHostname": {
+                  "joinNumber": 83,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - Hostname"
+                },
+                "ProcessorDomain": {
+                  "joinNumber": 84,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - Domain"
+                },
+                "ProcessorDns1": {
+                  "joinNumber": 85,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - DNS 1"
+                },
+                "ProcessorDns2": {
+                  "joinNumber": 86,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - DNS 2"
+                },
+                "ProcessorMac1": {
+                  "joinNumber": 87,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - MAC 1"
+                },
+                "ProcessorMac2": {
+                  "joinNumber": 88,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - MAC 2"
+                },
+                "ProcessorNetMask1": {
+                  "joinNumber": 89,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - Net Mask 1"
+                },
+                "ProcessorNetMask2": {
+                  "joinNumber": 90,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - Net Mask 2"
+                },
+                "ProcessorFirmware": {
+                  "joinNumber": 91,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Processor - Firmware"
+                },
+                "ProgramNameStart": {
+                  "joinNumber": 100,
+                  "joinSpan": 10,
+                  "attributeName": "Info - Processor - Program Name"
+                },
+                "ProcessorReboot": {
+                  "joinNumber": 210,
+                  "joinSpan": 1,
+                  "attributeName": "Processor - Reboot"
+                },
+                "VolumeFader1": {
+                  "joinNumber": 71,
+                  "joinSpan": 1,
+                  "attributeName": "Volume - Zone01"
+                },
+                "VcCodecInCall": {
+                  "joinNumber": 50,
+                  "joinSpan": 1,
+                  "attributeName": "In Call - VTC 1"
+                },
+                "VcCodecOnline": {
+                  "joinNumber": 134,
+                  "joinSpan": 1,
+                  "attributeName": "Device OK - Codec"
+                },
+                "VcCodecIpAddress": {
+                  "joinNumber": 93,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Codec - IP"
+                },
+                "VcCodecIpPort": {
+                  "joinNumber": 94,
+                  "joinSpan": 1,
+                  "attributeName": "Info - Codec - Port"
+                },
+                "Display1CurrentSourceName": {
+                  "joinNumber": 50,
+                  "joinSpan": 1,
+                  "attributeName": "Source Routed - Display"
+                },
+                "TouchpanelOnlineStart": {
+                  "joinNumber": 197,
+                  "joinSpan": 2,
+                  "attributeName": "Device OK - Touchpanel"
+                },
+                "XpanelOnlineStart": {
+                  "joinNumber": 199,
+                  "joinSpan": 1,
+                  "attributeName": "Device OK - XPanel"
+                },
+                "DisplayOnlineStart": {
+                  "joinNumber": 142,
+                  "joinSpan": 6,
+                  "attributeName": "Device OK - Display"
+                },
+                "Display1LaptopSourceStart": {
+                  "joinNumber": 200,
+                  "joinSpan": 0,
+                  "attributeName": "Display 1 - Source Laptop"
+                },
+                "Display1DiscPlayerSourceStart": {
+                  "joinNumber": 201,
+                  "joinSpan": 0,
+                  "attributeName": "Display 1 - Source Disc Player"
+                },
+                "Display1SetTopBoxSourceStart": {
+                  "joinNumber": 202,
+                  "joinSpan": 0,
+                  "attributeName": "Display 1 - Source TV"
+                },
+                "Display1Start": {
+                  "joinNumber": 250,
+                  "joinSpan": 1,
+                  "attributeName": "Display 1 -"
+                }
+              }
+            
+        }
     }
 }
