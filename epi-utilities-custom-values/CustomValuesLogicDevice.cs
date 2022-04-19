@@ -6,8 +6,12 @@ using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using System;
+using Newtonsoft.Json;
+
 using Newtonsoft.Json.Linq;
+using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp;
+
 
 namespace Essentials.Plugin.CustomValues
 {
@@ -26,7 +30,6 @@ namespace Essentials.Plugin.CustomValues
         /// It is often desirable to store the config
         /// </summary>
 		private DeviceConfig _Config;
-
 		private CustomValuesConfigObject _Properties
 		{
 			get
@@ -42,6 +45,23 @@ namespace Essentials.Plugin.CustomValues
 			}
 		}
 
+		private JObject FileData; 
+
+		private bool UseFile
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_Properties.FilePath))
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
+			}
+		}
+
 		public CustomValuesDevice(string key, string name, DeviceConfig config)
             : base(config)
         {
@@ -49,35 +69,102 @@ namespace Essentials.Plugin.CustomValues
             _Config = config;
 			CrestronConsole.AddNewConsoleCommand(ConsoleCommand, "CustomValue", "gets/sets a CustomValue path [NewValue]", ConsoleAccessLevelEnum.AccessOperator);
 
-
+			if (UseFile)
+			{
+				AddPostActivationAction(() =>
+				{
+					PostActivationMethodObject();
+				});
+			}
         }
+
+
+
+		object PostActivationMethodObject()
+		{
+			try
+			{
+				if (File.Exists(_Properties.FilePath))
+				{
+					FileData =  JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
+				}
+				else
+				{
+					CreateFile();
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.Console(0, this, "Error Processing File: {0}", e);
+			}
+
+			return null;
+		}
+
+		void CreateFile()
+		{
+
+			FileIO.WriteDataToFile("{}", _Properties.FilePath);
+			FileData = JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
+		}
 
 		private void WriteValue(string path, ushort value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			_Config.Properties["Data"][path] = value;
-			SetConfig(_Config);
+			if(UseFile)
+			{
+				FileData[path] = value;
+				WriteFile();
+			}
+			else 
+			{
+				_Config.Properties["Data"][path] = value;
+				SetConfig(_Config);
+			}
 		}
 
 		private void WriteValue(string path, string value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			_Config.Properties["Data"][path] = value;
-			SetConfig(_Config);
+			if(UseFile)
+			{
+				FileData[path] = value;
+				WriteFile();
+			}
+			else 
+			{
+				_Config.Properties["Data"][path] = value;
+				SetConfig(_Config);
+			}
 		}
 
 		private void WriteValue(string path, bool value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			_Config.Properties["Data"][path] = value;
-			SetConfig(_Config);
+			if(UseFile)
+			{
+				FileData[path] = value;
+				WriteFile();
+			}
+			else 
+			{
+				_Config.Properties["Data"][path] = value;
+				SetConfig(_Config);
+			}
 		}
+
+
+		private void WriteFile()
+		{
+			FileIO.WriteDataToFile(JsonConvert.SerializeObject(FileData) , _Properties.FilePath);
+		}
+
 
 		public void ConsoleCommand(string command)
 		{
 			if (string.IsNullOrEmpty(command))
 			{
-				Debug.Console(0, this, "CustomValue command requires an argument for Path and optionally a NewValue");
+				Debug.Console(0, this, "CustomValue Path [NewValue] command requires an argument for Path and optionally a NewValue");
 				return;
 			}
 			var commandArray = command.Split(' ');
@@ -151,8 +238,16 @@ namespace Essentials.Plugin.CustomValues
 				//var type = parts[0];
 				var path = j.Key;
 				uint? index = j.Value.JoinNumber;
-				JToken value = _Properties.Data.SelectToken(path);
-				if (index = 0)
+				JToken value;
+				if (UseFile)
+				{
+					value = FileData[path];
+				}
+				else
+				{
+					value = _Properties.Data.SelectToken(path);
+				}
+				if (index == 0)
 				{
 					Debug.Console(0, "Missing Join number for Key {0}", path);
 					continue;
@@ -162,6 +257,7 @@ namespace Essentials.Plugin.CustomValues
 					Debug.Console(0, "Cannot find value for Key {0}", path);
 					continue;
 				}
+
 				
 				//var path = map.Path;
 				ushort join = (ushort)(index + joinStart - 1); 
@@ -170,43 +266,52 @@ namespace Essentials.Plugin.CustomValues
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
 					Debug.Console(2, "I AM INT");
-					trilist.UShortInput[join].UShortValue = (ushort)value;
+					
 					trilist.SetUShortSigAction(join, (x) => 
 						{
 							WriteValue(path, x);
-							trilist.UShortInput[join].UShortValue = (ushort)_Properties.Data.SelectToken(path); 
+							if (UseFile) { trilist.UShortInput[join].UShortValue = (ushort)FileData.SelectToken(path); }
+							else { trilist.UShortInput[join].UShortValue = (ushort)_Properties.Data.SelectToken(path); }
 						});
 
+					trilist.UShortInput[join].UShortValue = (ushort)value;
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String) 
 				{
 					Debug.Console(2, "I AM STRING");
-					trilist.StringInput[join].StringValue = (string)value;
+					
 					trilist.SetStringSigAction(join, (x) =>
 							{
 								WriteValue(path, x);
-								trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path);
+								if (UseFile) { trilist.StringInput[join].StringValue = (string)FileData.SelectToken(path); }
+								else { trilist.StringInput[join].StringValue = ((string)_Properties.Data.SelectToken(path)); }
 							});
+					trilist.StringInput[join].StringValue = (string)value;
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
 				{
 					Debug.Console(2, "I AM STRING");
-					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
+					
 					trilist.SetStringSigAction(join, (x) =>
 					{
 						WriteValue(path, x);
-						trilist.StringInput[join].StringValue = (string)_Properties.Data.SelectToken(path);
+						if (UseFile) { trilist.StringInput[join].StringValue = (string)FileData.SelectToken(path); }
+						else { trilist.StringInput[join].StringValue = ((string)_Properties.Data.SelectToken(path)); } 
+						
 					});
+					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean)
 				{
 					Debug.Console(2, "I AM BOOL");
-					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
+					
 					trilist.SetStringSigAction(join, (x) =>
 					{
 						WriteValue(path, x);
-						trilist.BooleanInput[join].BoolValue = (bool)_Properties.Data.SelectToken(path);
+						if (UseFile) { trilist.BooleanInput[join].BoolValue = (bool)FileData.SelectToken(path); }
+						else { trilist.BooleanInput[join].BoolValue = ((bool)_Properties.Data.SelectToken(path)); }
 					});
+					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
 				}
 			}
             trilist.SetString(joinMap.DeviceName.JoinNumber, Name);

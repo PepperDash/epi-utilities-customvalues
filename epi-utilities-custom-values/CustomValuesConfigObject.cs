@@ -14,7 +14,7 @@ namespace Essentials.Plugin.CustomValues
 
 
 		[JsonProperty("filePath")]
-		public uint FilePath { get; set; }
+		public string FilePath { get; set; }
 
 		[JsonProperty("data")]
 		public JToken Data { get; set; }
