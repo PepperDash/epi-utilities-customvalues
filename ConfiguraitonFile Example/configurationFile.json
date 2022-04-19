@@ -93,20 +93,7 @@
         "tieLines": [],
         "joinMaps":{
             "customValues":{
-              "analogValue": {
-                "joinNumber": 2,
-                "joinSpan": 1
-              },
-              "ProcessorIp1": {
-                "joinSpan": 1,
-                "attributeName": "Info - Processor - IP 1"
-              },
-              "Processor": {
-                "joinNumber": 80,
-                "joinSpan": 1,
-                "attributeName": "Info - Processor - IP 1"
-              },
-              "stringValue": {
+              "Dict.label01": {
                 "joinNumber": 2,
                 "joinSpan": 1
               }

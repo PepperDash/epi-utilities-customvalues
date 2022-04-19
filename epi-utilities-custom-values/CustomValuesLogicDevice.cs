@@ -111,29 +111,36 @@ namespace Essentials.Plugin.CustomValues
 		private void WriteValue(string path, ushort value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			if(UseFile)
+			JToken tokenToReplace;
+			if(UseFile) 
 			{
-				FileData[path] = value;
+				tokenToReplace = FileData.SelectToken(path);
+				tokenToReplace.Replace(value);
 				WriteFile();
 			}
-			else 
+			else
 			{
-				_Config.Properties["Data"][path] = value;
+				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace.Replace(value);
 				SetConfig(_Config);
 			}
+			
 		}
 
 		private void WriteValue(string path, string value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			if(UseFile)
+			JToken tokenToReplace;
+			if (UseFile)
 			{
-				FileData[path] = value;
+				tokenToReplace = FileData.SelectToken(path);
+				tokenToReplace.Replace(value);
 				WriteFile();
 			}
-			else 
+			else
 			{
-				_Config.Properties["Data"][path] = value;
+				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace.Replace(value);
 				SetConfig(_Config);
 			}
 		}
@@ -141,14 +148,17 @@ namespace Essentials.Plugin.CustomValues
 		private void WriteValue(string path, bool value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			if(UseFile)
+			JToken tokenToReplace;
+			if (UseFile)
 			{
-				FileData[path] = value;
+				tokenToReplace = FileData.SelectToken(path);
+				tokenToReplace.Replace(value);
 				WriteFile();
 			}
-			else 
+			else
 			{
-				_Config.Properties["Data"][path] = value;
+				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace.Replace(value);
 				SetConfig(_Config);
 			}
 		}
@@ -241,7 +251,7 @@ namespace Essentials.Plugin.CustomValues
 				JToken value;
 				if (UseFile)
 				{
-					value = FileData[path];
+					value = FileData.SelectToken(path);
 				}
 				else
 				{
