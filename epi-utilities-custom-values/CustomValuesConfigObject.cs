@@ -17,7 +17,7 @@ namespace Essentials.Plugin.CustomValues
 		public string FilePath { get; set; }
 
 		[JsonProperty("data")]
-		public JToken Data { get; set; }
+		public JObject Data { get; set; }
 
 		[JsonProperty("paths")]
 		public Dictionary<string, string> Paths { get; set; }

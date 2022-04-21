@@ -36,7 +36,7 @@ FltTmp=1
 FpCS=0
 EnType=0
 ZeroOnIoOk=0
-PIT=
+PIT=example
 SGMethod=1
 ]
 [
@@ -1671,6 +1671,8 @@ SmH=25
 RelStat=Release
 ProdLine=3-Series
 DbH=2
+CsH=1
+EtH=1
 ]
 [
 ObjTp=Cm
@@ -1769,6 +1771,11 @@ Mnf=Crestron
 Mdl=3 Series TCP/IP Ethernet Intersystem Communications
 ]
 [
+ObjTp=Cs
+H=1
+DvH=595
+]
+[
 ObjTp=FP
 ]
 [
@@ -1791,6 +1798,13 @@ SH=25
 Z=75
 Ht=4
 Hi=67
+]
+[
+ObjTp=Et
+H=1
+DvH=595
+IPM=255.255.255.0
+IPA=127.0.0.2
 ]
 [
 ObjTp=Sm

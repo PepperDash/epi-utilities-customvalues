@@ -34,7 +34,8 @@
                 "type": "CustomValues",
                 "group": "plugin",
                 "properties": {
-                    "FilePath": "/user/program1/testFile.test",
+                    "FilePathExample": "/user/program1/testFile.test",
+                    "FilePathComment": "If FilePath is included it woull be used and Data object below will be ignored",
                     "Data": {
                         "Dict": {
                             "label01": "MainSourceSelector",
@@ -43,16 +44,7 @@
                         "analogValue": 37,
                         "boolValue": true,
                         "stringValue": "SomeString!"
-                    },
-                    
-                    "Paths": {
-                        "Integer-02": "analogValue",
-                        "String-02": "Dict",
-                        "Boolean-02": "boolValue"
-
-                       
                     }
-
                 }
             },
             {
@@ -75,12 +67,27 @@
                             "deviceKey": "CustomValues",
                             "joinStart": 1,
                             "joinMapKey": "customValues"
-                            
                         }
                     ]
                 }
             }
         ],
+        "joinMaps": {
+            "customValues": {
+                "Dict": {
+                    "joinNumber": 1
+                },
+                "Dict.label01": {
+                    "joinNumber": 2
+                },
+                "analogValue": {
+                    "joinNumber": 1
+                },
+                "boolValue": {
+                    "joinNumber": 1
+                }
+            }
+        },
         "info": {
             "comment": "",
             "lastModifiedDate": "2017-03-06T23:14:40.290Z",
@@ -90,14 +97,6 @@
             "systemType": "huddle"
         },
         "rooms": [],
-        "tieLines": [],
-        "joinMaps":{
-            "customValues":{
-              "Dict.label01": {
-                "joinNumber": 2,
-                "joinSpan": 1
-              }
-            }            
-        }
+        "tieLines": []
     }
 }

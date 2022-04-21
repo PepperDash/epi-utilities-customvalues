@@ -61,7 +61,7 @@ namespace Essentials.Plugin.CustomValues
 				else
 				{
 					return true;
-				}
+				}	
 			}
 		}
 
@@ -311,7 +311,7 @@ namespace Essentials.Plugin.CustomValues
 					if (UseFile) {
 						newFeedback = new StringFeedback(() => { return (string)FileData.SelectToken(path); }); 
 					}
-					else { 
+					else {
 						newFeedback = new StringFeedback(() => { return (string)_Properties.Data.SelectToken(path); }); 
 					}
 					Feedbacks.Add(path, newFeedback);
@@ -320,7 +320,7 @@ namespace Essentials.Plugin.CustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
 				{
-					Debug.Console(2, "I AM STRING");
+					Debug.Console(2, "I AM OBJECT");
 
 					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
@@ -329,11 +329,19 @@ namespace Essentials.Plugin.CustomValues
 					});
 					if (UseFile)
 					{
-						newFeedback = new StringFeedback(() => { return (string)FileData.SelectToken(path); });
+						newFeedback = new StringFeedback(() => {
+							var temp = FileData.SelectToken(path);
+							return temp.ToString(Newtonsoft.Json.Formatting.Indented);
+							
+						});
 					}
 					else
 					{
-						newFeedback = new StringFeedback(() => { return (string)_Properties.Data.SelectToken(path); });
+						newFeedback = new StringFeedback(() =>
+						{
+							var temp = _Properties.Data.SelectToken(path);
+							return temp.ToString(Newtonsoft.Json.Formatting.Indented);
+						});
 					}
 					Feedbacks.Add(path, newFeedback);
 					newFeedback.LinkInputSig(trilist.StringInput[join]);
