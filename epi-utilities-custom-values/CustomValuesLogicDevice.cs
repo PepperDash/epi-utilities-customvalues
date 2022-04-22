@@ -48,7 +48,37 @@ namespace Essentials.Plugin.CustomValues
 			}
 		}
 
-		private JObject FileData; 
+
+		private JObject _FileData;
+		private JObject FileData
+		{
+			get
+			{
+				if(UseFile)
+				{
+					return _FileData;
+				}
+				else 
+				{
+					return _Properties.Data;
+				}
+			}
+			set 
+			{
+				if (UseFile)
+				{
+					_FileData = value;
+				}
+				else
+				{
+					_Config.Properties.ToObject<CustomValuesConfigObject>().Data = value;
+					
+				}
+			}
+
+		}
+
+
 
 		private bool UseFile
 		{
@@ -113,22 +143,29 @@ namespace Essentials.Plugin.CustomValues
 
 		private void WriteValue(string path, ushort value)
 		{
-			Debug.Console(2, "Writing data {0} {1}", path, value);
-			JToken tokenToReplace;
-			if(UseFile) 
+			try
 			{
-				tokenToReplace = FileData.SelectToken(path);
-				tokenToReplace.Replace(value);
+				Debug.Console(2, "Writing data {0} {1}", path, value);
+				JToken tokenToReplace;
+				if (UseFile)
+				{
+					tokenToReplace = FileData.SelectToken(path);
+					tokenToReplace.Replace(value);
+				}
+				else
+				{
+					tokenToReplace = _Config.Properties["Data"].SelectToken(path);
+					tokenToReplace.Replace(value);
+				}
 				WriteFile();
+
+				Feedbacks[path].FireUpdate();
 			}
-			else
+			catch (Exception e)
 			{
-				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
-				tokenToReplace.Replace(value);
-				SetConfig(_Config);
+				Debug.Console(0, this, "Error WriteValue: {0}", e);
 			}
-			Feedbacks[path].FireUpdate();
-			
+
 		}
 
 		private void WriteValue(string path, string value)
@@ -139,14 +176,13 @@ namespace Essentials.Plugin.CustomValues
 			{
 				tokenToReplace = FileData.SelectToken(path);
 				tokenToReplace.Replace(value);
-				WriteFile();
 			}
 			else
 			{
 				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
 				tokenToReplace.Replace(value);
-				SetConfig(_Config);
 			}
+			WriteFile();
 			Feedbacks[path].FireUpdate();
 		}
 
@@ -158,22 +194,27 @@ namespace Essentials.Plugin.CustomValues
 			{
 				tokenToReplace = FileData.SelectToken(path);
 				tokenToReplace.Replace(value);
-				WriteFile();
 			}
 			else
 			{
 				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
 				tokenToReplace.Replace(value);
-				SetConfig(_Config);
 			}
-
+			WriteFile();
 			Feedbacks[path].FireUpdate();
 		}
 
 
 		private void WriteFile()
 		{
-			FileIO.WriteDataToFile(JsonConvert.SerializeObject(FileData) , _Properties.FilePath);
+			if (UseFile)
+			{
+				FileIO.WriteDataToFile(JsonConvert.SerializeObject(FileData), _Properties.FilePath);
+			}
+			else
+			{
+				SetConfig(_Config);
+			}
 		}
 
 
@@ -242,12 +283,8 @@ namespace Essentials.Plugin.CustomValues
 				Debug.Console(0, "Custom Joins not found!!!");
             }
 			
-
             Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
-
-			//Debug.Console(0, "TEST {0}", customJoins.);
-
 			foreach (var j in customJoins)
 			{
 				
@@ -283,18 +320,12 @@ namespace Essentials.Plugin.CustomValues
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
 					Debug.Console(2, "I AM INT");
-					
-					IntFeedback newFeedback;
-					trilist.SetUShortSigAction(join, (x) => 
-						{
-							WriteValue(path, x);
-						});
-					if (UseFile) {
-						newFeedback = new IntFeedback(() => { return (ushort)FileData.SelectToken(path); }); 
-					}
-					else { 
-						newFeedback = new IntFeedback(() => { return (ushort)_Properties.Data.SelectToken(path); }); 
-					}
+					trilist.SetUShortSigAction(join, (x) =>
+					{
+						WriteValue(path, x);
+					});
+
+					var newFeedback = new IntFeedback(() => { return (ushort)FileData.SelectToken(path); }); 
 					Feedbacks.Add(path, newFeedback);
 					newFeedback.LinkInputSig(trilist.UShortInput[join]);
 					newFeedback.FireUpdate();
@@ -308,12 +339,7 @@ namespace Essentials.Plugin.CustomValues
 							{
 								WriteValue(path, x);
 							});
-					if (UseFile) {
-						newFeedback = new StringFeedback(() => { return (string)FileData.SelectToken(path); }); 
-					}
-					else {
-						newFeedback = new StringFeedback(() => { return (string)_Properties.Data.SelectToken(path); }); 
-					}
+					newFeedback = new StringFeedback(() => { return (string)FileData.SelectToken(path); }); 
 					Feedbacks.Add(path, newFeedback);
 					newFeedback.LinkInputSig(trilist.StringInput[join]);
 					newFeedback.FireUpdate();
@@ -327,19 +353,11 @@ namespace Essentials.Plugin.CustomValues
 					{
 						WriteValue(path, x);
 					});
-					if (UseFile)
+					newFeedback = new StringFeedback(() =>
 					{
-						newFeedback = new StringFeedback(() => {
-							return FileData.SelectToken(path).ToString(Formatting.None);
-						});
-					}
-					else
-					{
-						newFeedback = new StringFeedback(() =>
-						{
-							return _Properties.Data.SelectToken(path).ToString(Formatting.None);
-						});
-					}
+						return FileData.SelectToken(path).ToString(Formatting.None);
+					});
+
 					Feedbacks.Add(path, newFeedback);
 					newFeedback.LinkInputSig(trilist.StringInput[join]);
 					newFeedback.FireUpdate();
@@ -349,18 +367,7 @@ namespace Essentials.Plugin.CustomValues
 					Debug.Console(2, "I AM BOOL");
 
 					BoolFeedback newFeedback;
-					trilist.SetBoolSigAction(join, (x) =>
-					{
-						WriteValue(path, x);
-					});
-					if (UseFile)
-					{
-						newFeedback = new BoolFeedback(() => { return (bool)FileData.SelectToken(path); });
-					}
-					else
-					{
-						newFeedback = new BoolFeedback(() => { return (bool)_Properties.Data.SelectToken(path); });
-					}
+					newFeedback = new BoolFeedback(() => { return (bool)FileData.SelectToken(path); });
 					Feedbacks.Add(path, newFeedback);
 					newFeedback.LinkInputSig(trilist.BooleanInput[join]);
 					newFeedback.FireUpdate();

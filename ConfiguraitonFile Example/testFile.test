@@ -1,9 +1,1 @@
-{
-    "Dict": {
-        "label01": "newLabel",
-        "instanceTag": "NAMED_CONTROL"
-    },
-    "analogValue": 17,
-    "boolValue": true,
-    "stringValue": "newString3",
-}
+{"Dict":{"label01":"newLabel","instanceTag":"NAMED_CONTROL"},"analogValue":444,"boolValue":true,"stringValue":"newString3"}

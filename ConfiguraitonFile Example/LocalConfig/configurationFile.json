@@ -1,0 +1,100 @@
+{
+    "system_url": "http://portal-QA.devcloud.pepperdash.com/templates/0f50640b-bc89-42d5-998f-81d137d3fc98#/template_summary",
+    "template_url": null,
+    "systemUuid": "",
+    "templateUuid": "missing template url",
+    "rooms": [],
+    "info": {
+        "name": "",
+        "date": "/Date(1650645412000-0400)/",
+        "type": "",
+        "version": "",
+        "runtimeInfo": {
+            "appName": null,
+            "assemblyVersion": null,
+            "osVersion": null,
+            "ipInfo": null
+        },
+        "comment": "",
+        "hostname": "AV3-7F6DCF92",
+        "appNumber": 1
+    },
+    "devices": [
+        {
+            "key": "processor",
+            "uid": 0,
+            "name": "rmc3",
+            "group": "processor",
+            "type": "rmc3",
+            "properties": {
+                "numberOfComPorts": 6,
+                "numberOfIrPorts": 8,
+                "numberOfRelays": 8,
+                "numberOfDIOPorts": 8
+            }
+        },
+        {
+            "key": "CustomValues",
+            "uid": 1,
+            "name": "Custom Values Essentials Plugin",
+            "group": "plugin",
+            "type": "CustomValues",
+            "properties": {
+                "FilePathExample": "/user/program1/testFile.test",
+                "FilePathComment": "If FilePath is included it will be used and Data object below will be ignored",
+                "Data": {
+                    "Dict": {
+                        "label01": "MainSourceSelector",
+                        "instanceTag": "NAMED_CONTROL"
+                    },
+                    "analogValue": 37,
+                    "boolValue": true,
+                    "stringValue": "SomeString!"
+                }
+            }
+        },
+        {
+            "key": "CustomValuesBridge",
+            "uid": 4,
+            "name": "CustomValuesBridge",
+            "group": "api",
+            "type": "eiscApiAdvanced",
+            "properties": {
+                "control": {
+                    "tcpSshProperties": {
+                        "address": "127.0.0.2",
+                        "port": 0
+                    },
+                    "ipid": "03",
+                    "method": "ipidTcp"
+                },
+                "devices": [
+                    {
+                        "deviceKey": "CustomValues",
+                        "joinStart": 1,
+                        "joinMapKey": "customValues"
+                    }
+                ]
+            }
+        }
+    ],
+    "sourceLists": null,
+    "destinationLists": null,
+    "tieLines": [],
+    "joinMaps": {
+        "customValues": {
+            "Dict": {
+                "joinNumber": 1
+            },
+            "Dict.label01": {
+                "joinNumber": 2
+            },
+            "analogValue": {
+                "joinNumber": 1
+            },
+            "boolValue": {
+                "joinNumber": 1
+            }
+        }
+    }
+}

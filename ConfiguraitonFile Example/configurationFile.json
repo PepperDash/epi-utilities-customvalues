@@ -35,7 +35,7 @@
                 "group": "plugin",
                 "properties": {
                     "FilePathExample": "/user/program1/testFile.test",
-                    "FilePathComment": "If FilePath is included it woull be used and Data object below will be ignored",
+                    "FilePathComment": "If FilePath is included it will be used and Data object below will be ignored",
                     "Data": {
                         "Dict": {
                             "label01": "MainSourceSelector",
