@@ -123,7 +123,7 @@ namespace Essentials.Plugin.CustomValues
 			}
 			else
 			{
-				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
 				tokenToReplace.Replace(value);
 				SetConfig(_Config);
 			}
@@ -143,7 +143,7 @@ namespace Essentials.Plugin.CustomValues
 			}
 			else
 			{
-				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
 				tokenToReplace.Replace(value);
 				SetConfig(_Config);
 			}
@@ -162,7 +162,7 @@ namespace Essentials.Plugin.CustomValues
 			}
 			else
 			{
-				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
 				tokenToReplace.Replace(value);
 				SetConfig(_Config);
 			}
@@ -330,17 +330,14 @@ namespace Essentials.Plugin.CustomValues
 					if (UseFile)
 					{
 						newFeedback = new StringFeedback(() => {
-							var temp = FileData.SelectToken(path);
-							return temp.ToString(Newtonsoft.Json.Formatting.Indented);
-							
+							return FileData.SelectToken(path).ToString(Formatting.None);
 						});
 					}
 					else
 					{
 						newFeedback = new StringFeedback(() =>
 						{
-							var temp = _Properties.Data.SelectToken(path);
-							return temp.ToString(Newtonsoft.Json.Formatting.Indented);
+							return _Properties.Data.SelectToken(path).ToString(Formatting.None);
 						});
 					}
 					Feedbacks.Add(path, newFeedback);
@@ -352,7 +349,7 @@ namespace Essentials.Plugin.CustomValues
 					Debug.Console(2, "I AM BOOL");
 
 					BoolFeedback newFeedback;
-					trilist.SetStringSigAction(join, (x) =>
+					trilist.SetBoolSigAction(join, (x) =>
 					{
 						WriteValue(path, x);
 					});
@@ -369,14 +366,6 @@ namespace Essentials.Plugin.CustomValues
 					newFeedback.FireUpdate();
 				}
 			}
-            trilist.SetString(joinMap.DeviceName.JoinNumber, Name);
-
-            trilist.OnlineStatusChange += (o, a) =>
-            {
-                if (!a.DeviceOnLine) return;
-
-                trilist.SetString(joinMap.DeviceName.JoinNumber, Name);
-            };
         }
 
 
