@@ -146,6 +146,7 @@ namespace Essentials.Plugin.CustomValues
 			try
 			{
 				Debug.Console(2, "Writing data {0} {1}", path, value);
+			
 				JToken tokenToReplace;
 				if (UseFile)
 				{
@@ -171,19 +172,23 @@ namespace Essentials.Plugin.CustomValues
 		private void WriteValue(string path, string value)
 		{
 			Debug.Console(2, "Writing data {0} {1}", path, value);
-			JToken tokenToReplace;
-			if (UseFile)
+			if (!String.IsNullOrEmpty(value))
 			{
-				tokenToReplace = FileData.SelectToken(path);
-				tokenToReplace.Replace(value);
+				JToken tokenToReplace;
+				if (UseFile)
+				{
+					tokenToReplace = FileData.SelectToken(path);
+					tokenToReplace.Replace(value);
+				}
+				else
+				{
+					tokenToReplace = _Config.Properties["Data"].SelectToken(path);
+					tokenToReplace.Replace(value);
+				}
+				Feedbacks[path].FireUpdate();
+				WriteFile();
 			}
-			else
-			{
-				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
-				tokenToReplace.Replace(value);
-			}
-			WriteFile();
-			Feedbacks[path].FireUpdate();
+			
 		}
 
 		private void WriteValue(string path, bool value)
