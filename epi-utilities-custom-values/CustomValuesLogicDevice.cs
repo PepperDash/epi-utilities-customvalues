@@ -118,9 +118,9 @@ namespace Essentials.Plugin.CustomValues
 			try
 			{
                 
-                if (File.Exists(Global.FilePathPrefix + "/" + _Properties.FilePath))
+                if (File.Exists(Global.FilePathPrefix + _Properties.FilePath))
 				{
-					FileData =  JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
+					FileData =  JObject.Parse(FileIO.ReadDataFromFile(_Properties.FilePath));
 				}
 				else
 				{
