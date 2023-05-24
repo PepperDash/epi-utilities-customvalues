@@ -102,42 +102,68 @@ namespace Essentials.Plugin.CustomValues
             _Config = config;
 			CrestronConsole.AddNewConsoleCommand(ConsoleCommand, "CustomValues", "gets/sets a CustomValue [path] ([NewValue])", ConsoleAccessLevelEnum.AccessOperator);
 			Feedbacks = new Dictionary<string, PepperDash.Essentials.Core.Feedback>();
-			if (UseFile)
-			{
-				AddPostActivationAction(() =>
-				{
-					PostActivationMethodObject();
-				});
-			}
+            
+            //if (UseFile)
+            //{
+            //    AddPostActivationAction(() =>
+            //    {
+            //        PostActivationMethodObject();
+            //    });
+            //}
+           
+        }
+
+        public override bool CustomActivate()
+        {
+            if (UseFile)
+            {
+                try
+                {
+
+                    if (File.Exists(Global.FilePathPrefix + _Properties.FilePath))
+                    {
+                        Debug.Console(2, this, "Reading exsisting file");
+                        FileData = JObject.Parse(FileIO.ReadDataFromFile(_Properties.FilePath));
+                    }
+                    else
+                    {
+                        CreateFile();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, this, "Error Processing File: {0}", e);
+                }
+            }
+            return true;
         }
 
 
-
-		object PostActivationMethodObject()
-		{
-			try
-			{
+        //object PostActivationMethodObject()
+        //{
+        //    try
+        //    {
                 
-                if (File.Exists(Global.FilePathPrefix + _Properties.FilePath))
-				{
-					FileData =  JObject.Parse(FileIO.ReadDataFromFile(_Properties.FilePath));
-				}
-				else
-				{
-					CreateFile();
-				}
-			}
-			catch (Exception e)
-			{
-				Debug.Console(0, this, "Error Processing File: {0}", e);
-			}
+        //        if (File.Exists(Global.FilePathPrefix + _Properties.FilePath))
+        //        {
+        //            FileData =  JObject.Parse(FileIO.ReadDataFromFile(_Properties.FilePath));
+        //        }
+        //        else
+        //        {
+        //            CreateFile();
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Debug.Console(0, this, "Error Processing File: {0}", e);
+        //    }
 
-			return null;
-		}
+        //    return null;
+        //}
 
 		void CreateFile()
 		{
-
+            Debug.Console(2, this, "Creating new file");
 			FileIO.WriteDataToFile("{}", _Properties.FilePath);
 			FileData = JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
 		}
@@ -146,12 +172,12 @@ namespace Essentials.Plugin.CustomValues
 		{
 			try
 			{
-				Debug.Console(2, "Writing data {0} {1}", path, value);
+				Debug.Console(2, this, "Writing data {0} {1}", path, value);
 			
 				JToken tokenToReplace;
 				if (UseFile)
 				{
-					tokenToReplace = FileData.SelectToken(path);
+				    tokenToReplace = FileData.SelectToken(path);
 					tokenToReplace.Replace(value);
 				}
 				else
@@ -172,7 +198,7 @@ namespace Essentials.Plugin.CustomValues
 
 		private void WriteValue(string path, string value)
 		{
-			Debug.Console(2, "Writing data {0} {1}", path, value);
+			Debug.Console(2, this, "Writing data {0} {1}", path, value);
 			if (!String.IsNullOrEmpty(value))
 			{
 				JToken tokenToReplace;
@@ -194,7 +220,7 @@ namespace Essentials.Plugin.CustomValues
 
 		private void WriteValue(string path, bool value)
 		{
-			Debug.Console(2, "Writing data {0} {1}", path, value);
+			Debug.Console(2, this, "Writing data {0} {1}", path, value);
 			JToken tokenToReplace;
 			if (UseFile)
 			{
@@ -286,11 +312,11 @@ namespace Essentials.Plugin.CustomValues
 			
             if (customJoins == null)
             {
-				Debug.Console(0, "Custom Joins not found!!!");
+				Debug.Console(0, this, "Custom Joins not found!!!");
             }
 			
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
+            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
 			foreach (var j in customJoins)
 			{
 				
@@ -309,12 +335,12 @@ namespace Essentials.Plugin.CustomValues
 				// Validity Checks
 				if (index == 0)
 				{
-					Debug.Console(0, "Missing Join number for Key {0}", path);
+					Debug.Console(0, this, "Missing Join number for Key {0}", path);
 					continue;
 				}
 				if (value == null)
 				{
-					Debug.Console(0, "Cannot find value for Key {0}", path);
+					Debug.Console(0, this, "Cannot find value for Key {0}", path);
 					continue;
 				}
 
@@ -322,10 +348,10 @@ namespace Essentials.Plugin.CustomValues
 				//var path = map.Path;
 				ushort join = (ushort)(index + joinStart - 1); 
 
-				Debug.Console(2, "Read and mapped data {0} {1} {2}",  value, join, value.Type.ToString());
+				Debug.Console(2, this, "Read and mapped data {0} {1} {2}",  value, join, value.Type.ToString());
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
-					Debug.Console(2, "I AM INT");
+					Debug.Console(2, this, "I AM INT");
 					trilist.SetUShortSigAction(join, (x) =>
 					{
 						WriteValue(path, x);
@@ -338,7 +364,7 @@ namespace Essentials.Plugin.CustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String) 
 				{
-					Debug.Console(2, "I AM STRING");
+					Debug.Console(2, this, "I AM STRING");
 					
 					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
@@ -352,7 +378,7 @@ namespace Essentials.Plugin.CustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
 				{
-					Debug.Console(2, "I AM OBJECT");
+					Debug.Console(2, this, "I AM OBJECT");
 
 					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
@@ -370,7 +396,7 @@ namespace Essentials.Plugin.CustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean)
 				{
-					Debug.Console(2, "I AM BOOL");
+					Debug.Console(2, this, "I AM BOOL");
 
 					BoolFeedback newFeedback;
 					newFeedback = new BoolFeedback(() => { return (bool)FileData.SelectToken(path); });
