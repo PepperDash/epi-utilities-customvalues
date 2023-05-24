@@ -32,6 +32,7 @@ namespace Essentials.Plugin.CustomValues
         /// </summary>
 		private DeviceConfig _Config;
 		public Dictionary<string, PepperDash.Essentials.Core.Feedback> Feedbacks;
+        bool Initialized = false;
 
 		private CustomValuesConfigObject _Properties
 		{
@@ -170,29 +171,32 @@ namespace Essentials.Plugin.CustomValues
 
 		private void WriteValue(string path, ushort value)
 		{
-			try
-			{
-				Debug.Console(2, this, "Writing data {0} {1}", path, value);
-			
-				JToken tokenToReplace;
-				if (UseFile)
-				{
-				    tokenToReplace = FileData.SelectToken(path);
-					tokenToReplace.Replace(value);
-				}
-				else
-				{
-					tokenToReplace = _Config.Properties["Data"].SelectToken(path);
-					tokenToReplace.Replace(value);
-				}
-				WriteFile();
+            if (Initialized)
+            {
+                try
+                {
+                    Debug.Console(2, this, "Writing data {0} {1}", path, value);
 
-				Feedbacks[path].FireUpdate();
-			}
-			catch (Exception e)
-			{
-				Debug.Console(0, this, "Error WriteValue: {0}", e);
-			}
+                    JToken tokenToReplace;
+                    if (UseFile)
+                    {
+                        tokenToReplace = FileData.SelectToken(path);
+                        tokenToReplace.Replace(value);
+                    }
+                    else
+                    {
+                        tokenToReplace = _Config.Properties["Data"].SelectToken(path);
+                        tokenToReplace.Replace(value);
+                    }
+                    WriteFile();
+
+                    Feedbacks[path].FireUpdate();
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, this, "Error WriteValue: {0}", e);
+                }
+            }
 
 		}
 
@@ -292,10 +296,6 @@ namespace Essentials.Plugin.CustomValues
 
 		}
 
-		public override bool CustomActivate()
-		{
-			return true; 
-		}
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -306,7 +306,7 @@ namespace Essentials.Plugin.CustomValues
             {
                 bridge.AddJoinMap(Key, joinMap);
             }
-			// bridge.CommunicationMonitor.StatusChange(
+            bridge.Eisc.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(Eisc_OnlineStatusChange);
             var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
 
 			
@@ -405,7 +405,24 @@ namespace Essentials.Plugin.CustomValues
 					newFeedback.FireUpdate();
 				}
 			}
+           
         }
+
+        void Eisc_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+            {
+                Debug.Console(2, this, "EISC ONLINE");
+                CTimer init = new CTimer((o) => { Debug.Console(2, this, "INITIALIZED"); Initialized = true; }, 10000);
+            }
+            else if (!args.DeviceOnLine)
+            {
+                Initialized = false;
+                Debug.Console(2, this, "EISC OFFLINE");
+            }
+        }
+
+
 
 
     }
