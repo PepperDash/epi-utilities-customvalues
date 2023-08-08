@@ -17,10 +17,7 @@ namespace Essentials.Plugin.CustomValues
 		public string FilePath { get; set; }
 
 		[JsonProperty("data")]
-		public JToken Data { get; set; }
-
-		[JsonProperty("paths")]
-		public Dictionary<string, string> Paths { get; set; }
+		public JObject Data { get; set; }
 
 		/// <summary>
 		/// Constuctor
@@ -41,28 +38,5 @@ namespace Essentials.Plugin.CustomValues
 
 	}
 
-
-
-
-	// May not be used 
-	public class SimplBridge
-	{
-		[JsonProperty("ipid")]
-		public string Ipid { get; set; }
-
-		[JsonProperty("mappings")]
-		public List<PathToJoinMapping> Mappings { get; set; }
-
-	}
-
-	public class PathToJoinMapping
-	{
-		[JsonProperty("join")]
-		public ushort Join { get; set; }
-
-		[JsonProperty("path")]
-		public string Path { get; set; }
-
-	}
 
 }

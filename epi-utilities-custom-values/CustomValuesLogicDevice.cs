@@ -7,8 +7,9 @@ using PepperDash.Essentials.Core.Config;
 using Crestron.SimplSharpPro.EthernetCommunication;
 using System;
 using Newtonsoft.Json;
-
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using PepperDash.Essentials.Core.Feedbacks;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp;
 
@@ -30,6 +31,9 @@ namespace Essentials.Plugin.CustomValues
         /// It is often desirable to store the config
         /// </summary>
 		private DeviceConfig _Config;
+		public Dictionary<string, PepperDash.Essentials.Core.Feedback> Feedbacks;
+        bool Initialized = false;
+
 		private CustomValuesConfigObject _Properties
 		{
 			get
@@ -45,7 +49,37 @@ namespace Essentials.Plugin.CustomValues
 			}
 		}
 
-		private JObject FileData; 
+
+		private JObject _FileData;
+		private JObject FileData
+		{
+			get
+			{
+				if(UseFile)
+				{
+					return _FileData;
+				}
+				else 
+				{
+					return _Properties.Data;
+				}
+			}
+			set 
+			{
+				if (UseFile)
+				{
+					_FileData = value;
+				}
+				else
+				{
+					_Config.Properties.ToObject<CustomValuesConfigObject>().Data = value;
+					
+				}
+			}
+
+		}
+
+
 
 		private bool UseFile
 		{
@@ -58,7 +92,7 @@ namespace Essentials.Plugin.CustomValues
 				else
 				{
 					return true;
-				}
+				}	
 			}
 		}
 
@@ -67,106 +101,156 @@ namespace Essentials.Plugin.CustomValues
         {
             Debug.Console(0, this, "Constructing new {0} instance", name);
             _Config = config;
-			CrestronConsole.AddNewConsoleCommand(ConsoleCommand, "CustomValue", "gets/sets a CustomValue path [NewValue]", ConsoleAccessLevelEnum.AccessOperator);
+			CrestronConsole.AddNewConsoleCommand(ConsoleCommand, "CustomValues", "gets/sets a CustomValue [path] ([NewValue])", ConsoleAccessLevelEnum.AccessOperator);
+			Feedbacks = new Dictionary<string, PepperDash.Essentials.Core.Feedback>();
+            
+            //if (UseFile)
+            //{
+            //    AddPostActivationAction(() =>
+            //    {
+            //        PostActivationMethodObject();
+            //    });
+            //}
+           
+        }
 
-			if (UseFile)
-			{
-				AddPostActivationAction(() =>
-				{
-					PostActivationMethodObject();
-				});
-			}
+        public override bool CustomActivate()
+        {
+            if (UseFile)
+            {
+                try
+                {
+
+                    if (File.Exists(Global.FilePathPrefix + _Properties.FilePath))
+                    {
+                        Debug.Console(2, this, "Reading exsisting file");
+                        FileData = JObject.Parse(FileIO.ReadDataFromFile(_Properties.FilePath));
+                    }
+                    else
+                    {
+                        CreateFile();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, this, "Error Processing File: {0}", e);
+                }
+            }
+            return true;
         }
 
 
+        //object PostActivationMethodObject()
+        //{
+        //    try
+        //    {
+                
+        //        if (File.Exists(Global.FilePathPrefix + _Properties.FilePath))
+        //        {
+        //            FileData =  JObject.Parse(FileIO.ReadDataFromFile(_Properties.FilePath));
+        //        }
+        //        else
+        //        {
+        //            CreateFile();
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Debug.Console(0, this, "Error Processing File: {0}", e);
+        //    }
 
-		object PostActivationMethodObject()
-		{
-			try
-			{
-				if (File.Exists(_Properties.FilePath))
-				{
-					FileData =  JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
-				}
-				else
-				{
-					CreateFile();
-				}
-			}
-			catch (Exception e)
-			{
-				Debug.Console(0, this, "Error Processing File: {0}", e);
-			}
-
-			return null;
-		}
+        //    return null;
+        //}
 
 		void CreateFile()
 		{
-
+            Debug.Console(2, this, "Creating new file");
 			FileIO.WriteDataToFile("{}", _Properties.FilePath);
 			FileData = JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
 		}
 
 		private void WriteValue(string path, ushort value)
 		{
-			Debug.Console(2, "Writing data {0} {1}", path, value);
-			JToken tokenToReplace;
-			if(UseFile) 
-			{
-				tokenToReplace = FileData.SelectToken(path);
-				tokenToReplace.Replace(value);
-				WriteFile();
-			}
-			else
-			{
-				tokenToReplace = _Config.Properties.SelectToken(path);
-				tokenToReplace.Replace(value);
-				SetConfig(_Config);
-			}
-			
+            if (Initialized)
+            {
+                try
+                {
+                    Debug.Console(2, this, "Writing data {0} {1}", path, value);
+
+                    JToken tokenToReplace;
+                    if (UseFile)
+                    {
+                        tokenToReplace = FileData.SelectToken(path);
+                        tokenToReplace.Replace(value);
+                    }
+                    else
+                    {
+                        tokenToReplace = _Config.Properties["Data"].SelectToken(path);
+                        tokenToReplace.Replace(value);
+                    }
+                    WriteFile();
+
+                    Feedbacks[path].FireUpdate();
+                }
+                catch (Exception e)
+                {
+                    Debug.Console(0, this, "Error WriteValue: {0}", e);
+                }
+            }
+
 		}
 
 		private void WriteValue(string path, string value)
 		{
-			Debug.Console(2, "Writing data {0} {1}", path, value);
-			JToken tokenToReplace;
-			if (UseFile)
+			Debug.Console(2, this, "Writing data {0} {1}", path, value);
+			if (!String.IsNullOrEmpty(value))
 			{
-				tokenToReplace = FileData.SelectToken(path);
-				tokenToReplace.Replace(value);
+				JToken tokenToReplace;
+				if (UseFile)
+				{
+					tokenToReplace = FileData.SelectToken(path);
+					tokenToReplace.Replace(value);
+				}
+				else
+				{
+					tokenToReplace = _Config.Properties["Data"].SelectToken(path);
+					tokenToReplace.Replace(value);
+				}
+				Feedbacks[path].FireUpdate();
 				WriteFile();
 			}
-			else
-			{
-				tokenToReplace = _Config.Properties.SelectToken(path);
-				tokenToReplace.Replace(value);
-				SetConfig(_Config);
-			}
+			
 		}
 
 		private void WriteValue(string path, bool value)
 		{
-			Debug.Console(2, "Writing data {0} {1}", path, value);
+			Debug.Console(2, this, "Writing data {0} {1}", path, value);
 			JToken tokenToReplace;
 			if (UseFile)
 			{
 				tokenToReplace = FileData.SelectToken(path);
 				tokenToReplace.Replace(value);
-				WriteFile();
 			}
 			else
 			{
-				tokenToReplace = _Config.Properties.SelectToken(path);
+				tokenToReplace = _Config.Properties["Data"].SelectToken(path);
 				tokenToReplace.Replace(value);
-				SetConfig(_Config);
 			}
+			WriteFile();
+			Feedbacks[path].FireUpdate();
 		}
 
 
 		private void WriteFile()
 		{
-			FileIO.WriteDataToFile(JsonConvert.SerializeObject(FileData) , _Properties.FilePath);
+			if (UseFile)
+			{
+				FileIO.WriteDataToFile(JsonConvert.SerializeObject(FileData), _Properties.FilePath);
+			}
+			else
+			{
+				SetConfig(_Config);
+			}
 		}
 
 
@@ -212,10 +296,6 @@ namespace Essentials.Plugin.CustomValues
 
 		}
 
-		public override bool CustomActivate()
-		{
-			return true; 
-		}
 
         public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
@@ -226,26 +306,20 @@ namespace Essentials.Plugin.CustomValues
             {
                 bridge.AddJoinMap(Key, joinMap);
             }
-			// bridge.CommunicationMonitor.StatusChange(
+            bridge.Eisc.OnlineStatusChange += new Crestron.SimplSharpPro.OnlineStatusChangeEventHandler(Eisc_OnlineStatusChange);
             var customJoins = JoinMapHelper.TryGetJoinMapAdvancedForDevice(joinMapKey);
 
 			
             if (customJoins == null)
             {
-				Debug.Console(0, "Custom Joins not found!!!");
+				Debug.Console(0, this, "Custom Joins not found!!!");
             }
 			
-
-            Debug.Console(1, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(0, "Linking to Bridge Type {0}", GetType().Name);
-
-			//Debug.Console(0, "TEST {0}", customJoins.);
-
+            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
 			foreach (var j in customJoins)
 			{
 				
-				//var parts = path.Key.Split('-');
-				//var type = parts[0];
 				var path = j.Key;
 				uint? index = j.Value.JoinNumber;
 				JToken value;
@@ -257,14 +331,16 @@ namespace Essentials.Plugin.CustomValues
 				{
 					value = _Properties.Data.SelectToken(path);
 				}
+
+				// Validity Checks
 				if (index == 0)
 				{
-					Debug.Console(0, "Missing Join number for Key {0}", path);
+					Debug.Console(0, this, "Missing Join number for Key {0}", path);
 					continue;
 				}
 				if (value == null)
 				{
-					Debug.Console(0, "Cannot find value for Key {0}", path);
+					Debug.Console(0, this, "Cannot find value for Key {0}", path);
 					continue;
 				}
 
@@ -272,67 +348,81 @@ namespace Essentials.Plugin.CustomValues
 				//var path = map.Path;
 				ushort join = (ushort)(index + joinStart - 1); 
 
-				Debug.Console(2, "Read and mapped data {0} {1} {2}",  value, join, value.Type.ToString());
+				Debug.Console(2, this, "Read and mapped data {0} {1} {2}",  value, join, value.Type.ToString());
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
-					Debug.Console(2, "I AM INT");
-					
-					trilist.SetUShortSigAction(join, (x) => 
-						{
-							WriteValue(path, x);
-							if (UseFile) { trilist.UShortInput[join].UShortValue = (ushort)FileData.SelectToken(path); }
-							else { trilist.UShortInput[join].UShortValue = (ushort)_Properties.Data.SelectToken(path); }
-						});
+					Debug.Console(2, this, "I AM INT");
+					trilist.SetUShortSigAction(join, (x) =>
+					{
+						WriteValue(path, x);
+					});
 
-					trilist.UShortInput[join].UShortValue = (ushort)value;
+					var newFeedback = new IntFeedback(() => { return (ushort)FileData.SelectToken(path); }); 
+					Feedbacks.Add(path, newFeedback);
+					newFeedback.LinkInputSig(trilist.UShortInput[join]);
+					newFeedback.FireUpdate();
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String) 
 				{
-					Debug.Console(2, "I AM STRING");
+					Debug.Console(2, this, "I AM STRING");
 					
+					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
 							{
 								WriteValue(path, x);
-								if (UseFile) { trilist.StringInput[join].StringValue = (string)FileData.SelectToken(path); }
-								else { trilist.StringInput[join].StringValue = ((string)_Properties.Data.SelectToken(path)); }
 							});
-					trilist.StringInput[join].StringValue = (string)value;
+					newFeedback = new StringFeedback(() => { return (string)FileData.SelectToken(path); }); 
+					Feedbacks.Add(path, newFeedback);
+					newFeedback.LinkInputSig(trilist.StringInput[join]);
+					newFeedback.FireUpdate();
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
 				{
-					Debug.Console(2, "I AM STRING");
-					
+					Debug.Console(2, this, "I AM OBJECT");
+
+					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
 					{
 						WriteValue(path, x);
-						if (UseFile) { trilist.StringInput[join].StringValue = (string)FileData.SelectToken(path); }
-						else { trilist.StringInput[join].StringValue = ((string)_Properties.Data.SelectToken(path)); } 
-						
 					});
-					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
+					newFeedback = new StringFeedback(() =>
+					{
+						return FileData.SelectToken(path).ToString(Formatting.None);
+					});
+
+					Feedbacks.Add(path, newFeedback);
+					newFeedback.LinkInputSig(trilist.StringInput[join]);
+					newFeedback.FireUpdate();
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean)
 				{
-					Debug.Console(2, "I AM BOOL");
-					
-					trilist.SetStringSigAction(join, (x) =>
-					{
-						WriteValue(path, x);
-						if (UseFile) { trilist.BooleanInput[join].BoolValue = (bool)FileData.SelectToken(path); }
-						else { trilist.BooleanInput[join].BoolValue = ((bool)_Properties.Data.SelectToken(path)); }
-					});
-					trilist.StringInput[join].StringValue = value.ToString(Newtonsoft.Json.Formatting.None);
+					Debug.Console(2, this, "I AM BOOL");
+
+					BoolFeedback newFeedback;
+					newFeedback = new BoolFeedback(() => { return (bool)FileData.SelectToken(path); });
+					Feedbacks.Add(path, newFeedback);
+					newFeedback.LinkInputSig(trilist.BooleanInput[join]);
+					newFeedback.FireUpdate();
 				}
 			}
-            trilist.SetString(joinMap.DeviceName.JoinNumber, Name);
-
-            trilist.OnlineStatusChange += (o, a) =>
-            {
-                if (!a.DeviceOnLine) return;
-
-                trilist.SetString(joinMap.DeviceName.JoinNumber, Name);
-            };
+           
         }
+
+        void Eisc_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
+        {
+            if (args.DeviceOnLine)
+            {
+                Debug.Console(2, this, "EISC ONLINE");
+                CTimer init = new CTimer((o) => { Debug.Console(2, this, "INITIALIZED"); Initialized = true; }, 10000);
+            }
+            else if (!args.DeviceOnLine)
+            {
+                Initialized = false;
+                Debug.Console(2, this, "EISC OFFLINE");
+            }
+        }
+
+
 
 
     }
