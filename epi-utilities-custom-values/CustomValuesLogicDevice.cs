@@ -31,6 +31,8 @@ namespace Essentials.Plugin.CustomValues
         /// It is often desirable to store the config
         /// </summary>
 		private DeviceConfig _Config;
+        public static CTimer _WriteTimer;
+        public const long WriteTimeout = 30000;
 		public Dictionary<string, PepperDash.Essentials.Core.Feedback> Feedbacks;
         bool Initialized = false;
 
@@ -240,8 +242,21 @@ namespace Essentials.Plugin.CustomValues
 			Feedbacks[path].FireUpdate();
 		}
 
+        private void WriteFile()
+        {
+            if (_WriteTimer == null)
+                _WriteTimer = new CTimer(WriteFileNow, WriteTimeout);
 
-		private void WriteFile()
+            _WriteTimer.Reset(WriteTimeout);
+
+            Debug.Console(1, "Config File write timer has been reset.");
+        }
+
+        private void WriteFileNow(object o)
+        {
+            WriteFileNow();
+        }
+		private void WriteFileNow()
 		{
 			if (UseFile)
 			{
