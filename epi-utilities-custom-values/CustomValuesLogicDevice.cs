@@ -32,9 +32,10 @@ namespace Essentials.Plugin.CustomValues
         /// </summary>
 		private DeviceConfig _Config;
         public static CTimer _WriteTimer;
-        public const long WriteTimeout = 30000;
+        public const long WriteTimeout = 15000;
 		public Dictionary<string, PepperDash.Essentials.Core.Feedback> Feedbacks;
         bool Initialized = false;
+        static CCriticalSection fileLock = new CCriticalSection();
 
 		private CustomValuesConfigObject _Properties
 		{
@@ -244,12 +245,34 @@ namespace Essentials.Plugin.CustomValues
 
         private void WriteFile()
         {
-            if (_WriteTimer == null)
-                _WriteTimer = new CTimer(WriteFileNow, WriteTimeout);
+            try
+			{
+				if (fileLock.TryEnter())
+				{
+                    if (_WriteTimer == null)
+                        _WriteTimer = new CTimer(WriteFileNow, WriteTimeout);
 
-            _WriteTimer.Reset(WriteTimeout);
+                    _WriteTimer.Reset(WriteTimeout);
+                    Debug.Console(1, "Config File write timer has been reset.");
+                }
+                else
+                {
+                    Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
+                    return;
+                }
 
-            Debug.Console(1, "Config File write timer has been reset.");
+            }
+            catch (Exception e)
+            {
+                Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+                return;
+            }
+            finally
+            {
+                if (fileLock != null && !fileLock.Disposed)
+                    fileLock.Leave();
+
+            }
         }
 
         private void WriteFileNow(object o)
