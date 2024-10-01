@@ -168,7 +168,9 @@ namespace Essentials.Plugin.CustomValues
 		void CreateFile()
 		{
             Debug.Console(2, this, "Creating new file");
-			FileIO.WriteDataToFile("{}", _Properties.FilePath);
+            var data = _Properties.Seed == null ? "{}" : _Properties.Seed.ToString();
+
+            FileIO.WriteDataToFile(data, _Properties.FilePath);
 			FileData = JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
 		}
 

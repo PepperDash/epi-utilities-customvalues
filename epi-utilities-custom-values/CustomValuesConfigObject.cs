@@ -11,7 +11,8 @@ namespace Essentials.Plugin.CustomValues
 	/// </summary>
 	public class CustomValuesConfigObject
 	{
-
+        [JsonProperty("seed")]
+        public JObject Seed { get; set; }
 
 		[JsonProperty("filePath")]
 		public string FilePath { get; set; }
