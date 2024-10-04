@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using PDT.CustomValues.EPI;
 using PepperDash.Core;
 using PepperDash.Essentials.Core;
 using Crestron.SimplSharpPro.UI;
@@ -37,7 +38,7 @@ namespace Essentials.Plugin.CustomValues
         {
             // Set the minimum Essentials Framework Version
 			// TODO [ ] Update the Essentials minimum framework version which this plugin has been tested against
-			MinimumEssentialsFrameworkVersion = "1.10.0";
+			MinimumEssentialsFrameworkVersion = "1.16.0";
 
             // In the constructor we initialize the list with the typenames that will build an instance of this device
 			// TODO [ ] Update the TypeNames for the plugin being developed
@@ -59,7 +60,7 @@ namespace Essentials.Plugin.CustomValues
 
             Debug.Console(1, "[{0}] Factory Attempting to create new device from type: {1}", dc.Key, dc.Type);
 
-			return new CustomValuesDevice(dc.Key, dc.Name, dc);
+			return new CustomValuesController(dc);
 
         }
     }

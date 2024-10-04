@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using PepperDash.Essentials.Core;
-using PepperDash.Essentials.Core.Config;
 
 namespace Essentials.Plugin.CustomValues
 {
@@ -19,25 +16,5 @@ namespace Essentials.Plugin.CustomValues
 
 		[JsonProperty("data")]
 		public JObject Data { get; set; }
-
-		/// <summary>
-		/// Constuctor
-		/// </summary>
-		/// <remarks>
-		/// If using a collection you must instantiate the collection in the constructor
-		/// to avoid exceptions when reading the configuration file 
-		/// </remarks>
-		public CustomValuesConfigObject()
-		{
-			
-		}
 	}
-
-	public class CustomValuesProps
-	{
-
-
-	}
-
-
 }
