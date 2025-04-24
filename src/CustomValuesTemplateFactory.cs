@@ -38,7 +38,7 @@ namespace Essentials.Plugin.CustomValues
         {
             // Set the minimum Essentials Framework Version
 			// TODO [ ] Update the Essentials minimum framework version which this plugin has been tested against
-			MinimumEssentialsFrameworkVersion = "1.16.0";
+			MinimumEssentialsFrameworkVersion = "2.4.6";
 
             // In the constructor we initialize the list with the typenames that will build an instance of this device
 			// TODO [ ] Update the TypeNames for the plugin being developed
