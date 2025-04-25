@@ -4,19 +4,17 @@ using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using Crestron.SimplSharpPro.EthernetCommunication;
 using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using PepperDash.Essentials.Core.Feedbacks;
 using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp;
 
 
 namespace Essentials.Plugin.CustomValues
 {
-	/// <summary>
+    /// <summary>
 	/// Plugin device template for logic devices that don't communicate outside the program
 	/// </summary>
 	/// <remarks>
@@ -35,7 +33,8 @@ namespace Essentials.Plugin.CustomValues
         public const long WriteTimeout = 15000;
 		public Dictionary<string, PepperDash.Essentials.Core.Feedback> Feedbacks;
         bool Initialized = false;
-        static CCriticalSection fileLock = new CCriticalSection();
+
+        private static readonly CCriticalSection fileLock = new CCriticalSection();
 
 		private CustomValuesConfigObject _Properties
 		{
@@ -167,9 +166,31 @@ namespace Essentials.Plugin.CustomValues
 
 		void CreateFile()
 		{
-            Debug.Console(2, this, "Creating new file");
-			FileIO.WriteDataToFile("{}", _Properties.FilePath);
-			FileData = JObject.Parse(FileIO.ReadDataFromFile(FileIO.GetFile(_Properties.FilePath)));
+            fileLock.Enter();
+		    try
+		    {
+		        Debug.Console(2, this, "Creating new file");
+		        var seed = _Properties.Seed == null ? "{}" : _Properties.Seed.ToString();
+
+		        FileIO.WriteDataToFile(seed, _Properties.FilePath);
+
+		        var filePath = _Properties.FilePath;
+		        Debug.Console(0, this, "File created at path:{0}", filePath);
+		        var file = FileIO.GetFile(filePath);
+		        var data = FileIO.ReadDataFromFile(file);
+
+                FileData = JObject.Parse(data);
+                Debug.Console(0, this, "Current data:{0}", FileData);
+		    }
+		    catch (Exception ex)
+		    {
+		        Debug.Console(0, Debug.ErrorLogLevel.Error, "Caught an exception creating a file:{0}", ex);
+		        throw;
+		    }
+		    finally
+		    {
+		        fileLock.Leave();
+		    }
 		}
 
 		private void WriteValue(string path, ushort value)
@@ -351,42 +372,38 @@ namespace Essentials.Plugin.CustomValues
             if (customJoins == null)
             {
 				Debug.Console(0, this, "Custom Joins not found!!!");
+                return;
             }
 			
             Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
+
 			foreach (var j in customJoins)
 			{
-				
 				var path = j.Key;
-				uint? index = j.Value.JoinNumber;
-				JToken value;
-				if (UseFile)
-				{
-					value = FileData.SelectToken(path);
-				}
-				else
-				{
-					value = _Properties.Data.SelectToken(path);
-				}
+                var index = j.Value.JoinNumber;
+                var join = (ushort)(index + joinStart - 1);
+                Debug.Console(0, this, "Attempting to map join:{0} to path:{1}", join, path);
+
+			    var value = UseFile ? FileData.SelectToken(path) : _Properties.Data.SelectToken(path);
+                Debug.Console(0, this, "Mapping to:{0}", value.ToString());
 
 				// Validity Checks
 				if (index == 0)
 				{
-					Debug.Console(0, this, "Missing Join number for Key {0}", path);
-					continue;
-				}
-				if (value == null)
-				{
-					Debug.Console(0, this, "Cannot find value for Key {0}", path);
+                    Debug.Console(0, this, "Missing Join number for path:{0}", path);
 					continue;
 				}
 
-				
+                if (value == null)
+                {
+                    Debug.Console(0, this, "Missing value in config for path:{0}", path);
+                    continue;
+                }
+
 				//var path = map.Path;
-				ushort join = (ushort)(index + joinStart - 1); 
+                Debug.Console(0, this, "Mapping join:{0} to value:{1} with path:{2}", join, value.Type.ToString());
 
-				Debug.Console(2, this, "Read and mapped data {0} {1} {2}",  value, join, value.Type.ToString());
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
 					Debug.Console(2, this, "I AM INT");
@@ -459,10 +476,6 @@ namespace Essentials.Plugin.CustomValues
                 Debug.Console(2, this, "EISC OFFLINE");
             }
         }
-
-
-
-
     }
 }
 
