@@ -1,17 +1,15 @@
-﻿using Crestron.SimplSharpPro.DeviceSupport;
+﻿using System;
+using System.Collections.Generic;
+using Crestron.SimplSharp;
+using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharpPro.DeviceSupport;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PepperDash.Core;
-using PepperDash.Essentials.Core.Devices;
 using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 using PepperDash.Essentials.Core.Config;
-using Crestron.SimplSharpPro.EthernetCommunication;
-using System;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
-using PepperDash.Essentials.Core.Feedbacks;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharp;
+using PepperDash.Essentials.Core.Devices;
 
 
 namespace Essentials.Plugin.CustomValues
