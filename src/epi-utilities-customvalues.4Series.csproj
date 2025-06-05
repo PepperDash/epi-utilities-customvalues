@@ -4,7 +4,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
-		<RootNamespace>PepperDash.Essentials.Plugin</RootNamespace>
+		<RootNamespace>UtilitiesCustomValues</RootNamespace>
 		<Deterministic>false</Deterministic>
 		<AssemblyTitle>PepperDash.Essentials.Plugin.Utilities.CustomValues</AssemblyTitle>
 		<Company>PepperDash Technologies</Company>

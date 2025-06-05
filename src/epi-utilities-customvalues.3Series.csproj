@@ -7,7 +7,7 @@
     <ProjectGuid>{9D249E47-8F95-4437-A6BB-563510287AD1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PDT.CustomValues.EPI</RootNamespace>
+    <RootNamespace>UtilitiesCustomValues</RootNamespace>
     <AssemblyName>PDT.CustomValues.EPI</AssemblyName>
     <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92300};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>WindowsCE</PlatformFamilyName>
