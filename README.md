@@ -1,5 +1,4 @@
 # Internal Essentials Plugin Template (c) 2022
-
 ## License
 Provided under MIT license
 

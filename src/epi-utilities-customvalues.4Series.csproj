@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<ProjectType>ProgramLibrary</ProjectType>
+	</PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<RootNamespace>UtilitiesCustomValues</RootNamespace>
+		<Deterministic>false</Deterministic>
+		<AssemblyTitle>PepperDash.Essentials.Plugin.Utilities.CustomValues</AssemblyTitle>
+		<Company>PepperDash Technologies</Company>
+		<Description>PepperDash Essentials Plugin to Monitor Devices.</Description>
+		<Copyright>Copyright 2025</Copyright>
+		<Version>1.0.0-local</Version>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<InformationalVersion>$(Version)</InformationalVersion>
+		<OutputPath>bin\$(Configuration)\</OutputPath>
+		<Authors>PepperDash Technologies</Authors>
+		<PackageId>PepperDash.Essentials.Plugins.Utilities.CustomValues</PackageId>
+		<PackageProjectUrl>https://github.com/PepperDash/epi-utilities-customvalues.git</PackageProjectUrl>
+		<PackageTags>crestron 4series essentials plugin device monitor</PackageTags>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DefineConstants>$(DefineConstants);SERIES4</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Properties\**" />
+		<EmbeddedResource Remove="Properties\**" />
+		<None Remove="Properties\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="epi-utilities-customvalues.projectinfo" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="../output\epi-utilities-customvalues.4Series.1.0.0-local.cplz" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="../output\epi-utilities-customvalues.4Series.1.0.0-local.cplz" />
+		<None Remove="PDT.CustomValues.projectinfo" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="PepperDashEssentials" Version="2.5.1">
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="../output\epi-utilities-customvalues.4Series.1.0.0-local.cplz" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="../output\epi-utilities-customvalues.4Series.1.0.0-local.cplz" />
+	</ItemGroup>
+</Project>
