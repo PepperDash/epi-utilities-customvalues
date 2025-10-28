@@ -125,8 +125,7 @@ namespace UtilitiesCustomValues
                 return;
             }
 
-            if (customJoins != null)
-            { joinMap.SetCustomJoinData(customJoins); }
+            joinMap.SetCustomJoinData(customJoins);
 
             Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
             Debug.LogDebug(this, "Linking to Bridge Type {0}", GetType().Name);

@@ -14,7 +14,7 @@ Beginning with the updated implementation (post Oct 2025 changes), the plugin in
 | 1 | Input | EnableSaving | Hold HIGH to allow persistence of changes. When LOW, saving disabled; if `trackChangesWhileSavingDisabled` is true changes are staged in memory, otherwise ignored. |
 | 2 | Output | SavingReadyFb | HIGH when plugin is internally mapped/ready AND EnableSaving asserted. LOW otherwise. |
 
-Control join metadata (capabilities and descriptions) is now declared in the advanced join map (`EssentialsPluginBridgeJoinMapTemplate`). Joins 4 (former re-propagation feedback) was deprecated. Input and output do NOT share join 1; using distinct join 2 for feedback avoids collisions with some bridge pathways that do not permit a single digital to act as both directions simultaneously.
+Control join metadata (capabilities and descriptions) is now declared in the advanced join map (`EssentialsPluginBridgeJoinMapTemplate`). Input and output do NOT share join 1; using distinct join 2 for feedback avoids collisions with some bridge pathways that do not permit a single digital to act as both directions simultaneously.
 
 ### Digital Join Offset (Data Boolean Join Remapping)
 DEFAULTS UPDATED (Oct 2025+): `legacyDigitalJoinBehavior` now defaults to TRUE (you can omit it). When TRUE, boolean data joins are NOT offset and use their configured join numbers relative to `joinStart` (legacy behavior).
@@ -135,7 +135,7 @@ All values can also be set and retrived using the console command "customvalues 
 ```
 
 ### Updated Join Mapping Example (Boolean Offset)
-If you explicitly set `"legacyDigitalJoinBehavior": false` and `joinStart` is 1, a boolean path configured with `"joinNumber": 1` will map to digital join **101** on the bridge instead of 1. (When the property is omitted or true, it maps directly to join 1.) Control joins 1-4 remain reserved.
+If you explicitly set `"legacyDigitalJoinBehavior": false` and `joinStart` is 1, a boolean path configured with `"joinNumber": 1` will map to digital join **101** on the bridge instead of 1. (When the property is omitted or true, it maps directly to join 1.) Control joins 1-2 remain reserved.
 
 ### Minimal Config Without File (In-Memory Only)
 ```json
