@@ -85,7 +85,7 @@ namespace UtilitiesCustomValues
 		public CustomValuesDevice(string key, string name, DeviceConfig config)
 			: base(config)
 		{
-			Debug.Console(0, this, "Constructing new {0} instance", name);
+			Debug.LogInformation(this, "Constructing new {0} instance", name);
 			_config = config;
 			CrestronConsole.AddNewConsoleCommand(ConsoleCommand, "CustomValues", "gets/sets a CustomValue [path] ([NewValue])", ConsoleAccessLevelEnum.AccessOperator);
 			Feedbacks = new Dictionary<string, PepperDash.Essentials.Core.Feedback>();
@@ -101,7 +101,7 @@ namespace UtilitiesCustomValues
 
 				if (File.Exists(Global.FilePathPrefix + Properties.FilePath))
 				{
-					Debug.Console(2, this, "Reading exsisting file");
+					Debug.LogVerbose(this, "Reading exsisting file");
 					FileData = JObject.Parse(FileIO.ReadDataFromFile(Properties.FilePath));
 				}
 				else
@@ -111,7 +111,7 @@ namespace UtilitiesCustomValues
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, this, "Error Processing File: {0}", e);
+				Debug.LogInformation(this, "Error Processing File: {0}", e);
 			}
 			return true;
 		}
@@ -121,22 +121,22 @@ namespace UtilitiesCustomValues
 			FileLock.Enter();
 			try
 			{
-				Debug.Console(2, this, "Creating new file");
+				Debug.LogVerbose(this, "Creating new file");
 				var seed = Properties.Seed == null ? "{}" : Properties.Seed.ToString();
 
 				FileIO.WriteDataToFile(seed, Properties.FilePath);
 
 				var filePath = Properties.FilePath;
-				Debug.Console(0, this, "File created at path:{0}", filePath);
+				Debug.LogInformation(this, "File created at path:{0}", filePath);
 				var file = FileIO.GetFile(filePath);
 				var data = FileIO.ReadDataFromFile(file);
 
 				FileData = JObject.Parse(data);
-				Debug.Console(0, this, "Current data:{0}", FileData);
+				Debug.LogInformation(this, "Current data:{0}", FileData);
 			}
 			catch (Exception ex)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Caught an exception creating a file:{0}", ex);
+				Debug.LogError(this, "Caught an exception creating a file:{0}", ex);
 				throw;
 			}
 			finally
@@ -151,7 +151,7 @@ namespace UtilitiesCustomValues
 
 			try
 			{
-				Debug.Console(2, this, "Writing data {0} {1}", path, value);
+				Debug.LogVerbose(this, "Writing data {0} {1}", path, value);
 
 				JToken tokenToReplace;
 				if (UseFile)
@@ -170,7 +170,7 @@ namespace UtilitiesCustomValues
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, this, "Error WriteValue: {0}", e);
+				Debug.LogError(this, "Error WriteValue: {0}", e);
 			}
 		}
 
@@ -178,7 +178,7 @@ namespace UtilitiesCustomValues
 		{
 			if (String.IsNullOrEmpty(value)) return;
 
-			Debug.Console(2, this, "Writing data {0} {1}", path, value);
+			Debug.LogVerbose(this, "Writing data {0} {1}", path, value);
 
 			JToken tokenToReplace;
 			if (UseFile)
@@ -197,7 +197,7 @@ namespace UtilitiesCustomValues
 
 		private void WriteValue(string path, bool value)
 		{
-			Debug.Console(2, this, "Writing data {0} {1}", path, value);
+			Debug.LogVerbose(this, "Writing data {0} {1}", path, value);
 			JToken tokenToReplace;
 			if (UseFile)
 			{
@@ -223,17 +223,17 @@ namespace UtilitiesCustomValues
 						WriteTimer = new CTimer(WriteFileNow, WriteTimeout);
 
 					WriteTimer.Reset(WriteTimeout);
-					Debug.Console(1, "Config File write timer has been reset.");
+					Debug.LogDebug(this, "Config File write timer has been reset.");
 				}
 				else
 				{
-					Debug.Console(0, Debug.ErrorLogLevel.Error, "FileIO Unable to enter FileLock");
+					Debug.LogError(this, "FileIO Unable to enter FileLock");
 				}
 
 			}
 			catch (Exception e)
 			{
-				Debug.Console(0, Debug.ErrorLogLevel.Error, "Error: FileIO read failed: \r{0}", e);
+				Debug.LogError(this, "Error: FileIO read failed: \r{0}", e);
 			}
 			finally
 			{
@@ -267,7 +267,7 @@ namespace UtilitiesCustomValues
 		{
 			if (string.IsNullOrEmpty(command))
 			{
-				Debug.Console(0, this, "CustomValue Path [NewValue] command requires an argument for Path and optionally a NewValue");
+				Debug.LogInformation(this, "CustomValue Path [NewValue] command requires an argument for Path and optionally a NewValue");
 				return;
 			}
 			var commandArray = command.Split(' ');
@@ -275,7 +275,7 @@ namespace UtilitiesCustomValues
 
 			if (commandArray.Length == 1)
 			{
-				Debug.Console(0, this, "CustomValue Path:{0} Value:{1}", path, Properties.Data.SelectToken(path));
+				Debug.LogInformation(this, "CustomValue Path:{0} Value:{1}", path, Properties.Data.SelectToken(path));
 			}
 			else if (commandArray.Length == 2)
 			{
@@ -288,7 +288,7 @@ namespace UtilitiesCustomValues
 				}
 				catch
 				{
-					Debug.Console(0, this, "CustomValue command requires an argument for Path and optionally a NewValue");
+					Debug.LogInformation(this, "CustomValue command requires an argument for Path and optionally a NewValue");
 				}
 				if (value.ToLower() == "true" || value.ToLower() == "false")
 				{
@@ -317,42 +317,42 @@ namespace UtilitiesCustomValues
 
 			if (customJoins == null)
 			{
-				Debug.Console(0, this, "Custom Joins not found!!!");
+				Debug.LogInformation(this, "Custom Joins not found!!!");
 				return;
 			}
 
-			Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-			Debug.Console(0, this, "Linking to Bridge Type {0}", GetType().Name);
+			Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+			Debug.LogInformation(this, "Linking to Bridge Type {0}", GetType().Name);
 
 			foreach (var j in customJoins)
 			{
 				var path = j.Key;
 				var index = j.Value.JoinNumber;
 				var join = (ushort)(index + joinStart - 1);
-				Debug.Console(0, this, "Attempting to map join:{0} to path:{1}", join, path);
+				Debug.LogInformation(this, "Attempting to map join:{0} to path:{1}", join, path);
 
 				var value = UseFile ? FileData.SelectToken(path) : Properties.Data.SelectToken(path);
-				Debug.Console(0, this, "Mapping to:{0}", value.ToString());
+				Debug.LogInformation(this, "Mapping to:{0}", value.ToString());
 
 				// Validity Checks
 				if (index == 0)
 				{
-					Debug.Console(0, this, "Missing Join number for path:{0}", path);
+					Debug.LogInformation(this, "Missing Join number for path:{0}", path);
 					continue;
 				}
 
 				if (value == null)
 				{
-					Debug.Console(0, this, "Missing value in config for path:{0}", path);
+					Debug.LogInformation(this, "Missing value in config for path:{0}", path);
 					continue;
 				}
 
 				//var path = map.Path;
-				Debug.Console(0, this, "Mapping join:{0} to value:{1} with path:{2}", join, value.Type.ToString());
+				Debug.LogInformation(this, "Mapping join:{0} to value:{1} with path:{2}", join, value.Type.ToString());
 
 				if (value.Type == Newtonsoft.Json.Linq.JTokenType.Integer)
 				{
-					Debug.Console(2, this, "I AM INT");
+					Debug.LogVerbose(this, "I AM INT");
 					trilist.SetUShortSigAction(join, (x) =>
 					{
 						WriteValue(path, x);
@@ -365,7 +365,7 @@ namespace UtilitiesCustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.String)
 				{
-					Debug.Console(2, this, "I AM STRING");
+					Debug.LogVerbose(this, "I AM STRING");
 
 					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
@@ -379,7 +379,7 @@ namespace UtilitiesCustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Object)
 				{
-					Debug.Console(2, this, "I AM OBJECT");
+					Debug.LogVerbose(this, "I AM OBJECT");
 
 					StringFeedback newFeedback;
 					trilist.SetStringSigAction(join, (x) =>
@@ -397,7 +397,7 @@ namespace UtilitiesCustomValues
 				}
 				else if (value.Type == Newtonsoft.Json.Linq.JTokenType.Boolean)
 				{
-					Debug.Console(2, this, "I AM BOOL");
+					Debug.LogVerbose(this, "I AM BOOL");
 
 					BoolFeedback newFeedback;
 					newFeedback = new BoolFeedback(() => { return (bool)FileData.SelectToken(path); });
@@ -419,13 +419,13 @@ namespace UtilitiesCustomValues
 		{
 			if (args.DeviceOnLine)
 			{
-				Debug.Console(2, this, "EISC ONLINE");
-				var init = new CTimer((o) => { Debug.Console(2, this, "INITIALIZED"); _initialized = true; }, 10000);
+				Debug.LogVerbose(this, "EISC ONLINE");
+				var init = new CTimer((o) => { Debug.LogVerbose(this, "INITIALIZED"); _initialized = true; }, 10000);
 			}
 			else if (!args.DeviceOnLine)
 			{
 				_initialized = false;
-				Debug.Console(2, this, "EISC OFFLINE");
+				Debug.LogVerbose(this, "EISC OFFLINE");
 			}
 		}
 	}

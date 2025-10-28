@@ -28,7 +28,7 @@ namespace UtilitiesCustomValues
 		/// <inheritdoc />
 		public override EssentialsDevice BuildDevice(PepperDash.Essentials.Core.Config.DeviceConfig dc)
 		{
-			Debug.Console(1, "[{0}] Factory Attempting to create new device from type: {1}", dc.Key, dc.Type);
+			Debug.LogDebug("CustomValues", "[{0}] Factory Attempting to create new device from type: {1}", dc.Key, dc.Type);
 
 			return new CustomValuesController(dc);
 		}

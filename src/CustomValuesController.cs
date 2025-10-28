@@ -58,7 +58,7 @@ namespace UtilitiesCustomValues
             {
                 if (string.IsNullOrEmpty(_props.FilePath))
                 {
-                    Debug.Console(0, this, "File path not specified... saving values locally");
+                    Debug.LogInformation(this, "File path not specified... saving values locally");
                     return;
                 }
 
@@ -73,7 +73,7 @@ namespace UtilitiesCustomValues
                 }
                 catch (Exception ex)
                 {
-                    Debug.Console(0, this, Debug.ErrorLogLevel.Warning, "Failed to save custom values data: '{0}'", ex);
+                    Debug.LogWarning(this, "Failed to save custom values data: '{0}'", ex);
                 }
             }),
                 Timeout.Infinite);
@@ -86,12 +86,12 @@ namespace UtilitiesCustomValues
 
             if (data == null)
             {
-                Debug.Console(0, this, "No data found in the config or file, using an empty JObject.");
+                Debug.LogInformation(this, "No data found in the config or file, using an empty JObject.");
                 data = new JObject();
             }
             else
             {
-                Debug.Console(1, this, "Loaded data from file: {0}", _props.FilePath);
+                Debug.LogDebug(this, "Loaded data from file: {0}", _props.FilePath);
             }
 
             // Initialize control feedback objects early
@@ -121,15 +121,15 @@ namespace UtilitiesCustomValues
 
             if (customJoins == null)
             {
-                Debug.Console(0, this, "Custom Joins not found!!!");
+                Debug.LogInformation(this, "Custom Joins not found!!!");
                 return;
             }
 
             if (customJoins != null)
             { joinMap.SetCustomJoinData(customJoins); }
 
-            Debug.Console(1, this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
-            Debug.Console(1, this, "Linking to Bridge Type {0}", GetType().Name);
+            Debug.LogDebug(this, "Linking to Trilist '{0}'", trilist.ID.ToString("X"));
+            Debug.LogDebug(this, "Linking to Bridge Type {0}", GetType().Name);
 
             // Link control outputs (BoolFeedback -> BooleanInput drives outward state in Essentials)
             // Prefer using the constant so if join map custom data not found we still know intended default
@@ -150,7 +150,7 @@ namespace UtilitiesCustomValues
                 {
                     if (_enableSaving == state) return; // no change
                     _enableSaving = state;
-                    Debug.Console(1, this, "EnableSaving changed -> {0}", _enableSaving);
+                    Debug.LogDebug(this, "EnableSaving changed -> {0}", _enableSaving);
                     if (_enableSaving)
                     {
                         _savingReady = _pluginReady && _enableSaving;
@@ -178,19 +178,19 @@ namespace UtilitiesCustomValues
 
                 if (index == 0)
                 {
-                    Debug.Console(0, this, "Cannot map path: '{0}', missing join number", path);
+                    Debug.LogInformation(this, "Cannot map path: '{0}', missing join number", path);
                     continue;
                 }
 
-                Debug.Console(1, this, "Attempting to map path: '{1}' to join: '{0}'", join, path);
+                Debug.LogDebug(this, "Attempting to map path: '{1}' to join: '{0}'", join, path);
                 var value = data.SelectToken(path);
                 if (value == null)
                 {
-                    Debug.Console(0, this, "No value found for path: '{0}' in '{1}', ignoring path, update customValues if needed.", path, _props.FilePath);
+                    Debug.LogInformation(this, "No value found for path: '{0}' in '{1}', ignoring path, update customValues if needed.", path, _props.FilePath);
                     continue;
                 }
 
-                Debug.Console(1, this, "Mapping path: '{1}' to join: '{0}' as type: '{2}' with value: '{3}'",
+                Debug.LogDebug(this, "Mapping path: '{1}' to join: '{0}' as type: '{2}' with value: '{3}'",
                     join, path, value.Type.ToString(), value);
 
                 switch (value.Type)
@@ -213,7 +213,7 @@ namespace UtilitiesCustomValues
                             feedback.FireUpdate();
                             feedback.OutputChange +=
                                 (sender, args) =>
-                                    Debug.Console(1, this, "Value for path:{0} updated to {1}", path, args.IntValue);
+                                    Debug.LogDebug(this, "Value for path:{0} updated to {1}", path, args.IntValue);
 
                             break;
                         }
@@ -235,7 +235,7 @@ namespace UtilitiesCustomValues
                             feedback.FireUpdate();
                             feedback.OutputChange +=
                                 (sender, args) =>
-                                    Debug.Console(1, this, "Value for path:{0} updated to {1}", path, args.StringValue);
+                                    Debug.LogDebug(this, "Value for path:{0} updated to {1}", path, args.StringValue);
 
                             break;
                         }
@@ -257,7 +257,7 @@ namespace UtilitiesCustomValues
                             feedback.FireUpdate();
                             feedback.OutputChange +=
                                 (sender, args) =>
-                                    Debug.Console(1, this, "Value for path:{0} updated to {1}", path, args.StringValue);
+                                    Debug.LogDebug(this, "Value for path:{0} updated to {1}", path, args.StringValue);
 
                             break;
                         }
@@ -285,13 +285,13 @@ namespace UtilitiesCustomValues
                             feedback.FireUpdate();
                             feedback.OutputChange +=
                                 (sender, args) =>
-                                    Debug.Console(1, this, "Value for path:{0} updated to {1}", path, args.BoolValue);
+                                    Debug.LogDebug(this, "Value for path:{0} updated to {1}", path, args.BoolValue);
 
                             break;
                         }
                     default:
                         {
-                            Debug.Console(0, this, "Cannot map path: '{0}', unsupported type: {1}", path, value.Type);
+                            Debug.LogInformation(this, "Cannot map path: '{0}', unsupported type: {1}", path, value.Type);
                             continue;
                         }
                 }
@@ -300,7 +300,7 @@ namespace UtilitiesCustomValues
             _pluginReady = true;
             _savingReady = _pluginReady && _enableSaving;
             _savingReadyFeedback.FireUpdate();
-            Debug.Console(1, this, "Finished mapping joins. SavingReady: {0}", _savingReady);
+            Debug.LogDebug(this, "Finished mapping joins. SavingReady: {0}", _savingReady);
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace UtilitiesCustomValues
             }
             catch (Exception ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning, "Caught an exception within the lock:{0}", ex);
+                Debug.LogWarning(this, "Caught an exception within the lock:{0}", ex);
                 throw;
             }
             finally
@@ -341,7 +341,7 @@ namespace UtilitiesCustomValues
         private static JObject SeedData(string fileName, JObject seed)
         {
             var filePath = Path.Combine(Global.FilePathPrefix, fileName);
-            Debug.Console(0, "Attemping to find a file at path:{0}", filePath);
+            Debug.LogInformation("CustomValues", "Attemping to find a file at path:{0}", filePath);
 
             if (File.Exists(filePath))
             {
@@ -353,7 +353,7 @@ namespace UtilitiesCustomValues
                 }
             }
 
-            Debug.Console(0, "Didn't find a file at path:{0}, creating...", filePath);
+            Debug.LogInformation("CustomValues", "Didn't find a file at path:{0}, creating...", filePath);
             var dataToSeed = seed ?? new JObject();
             using (var fs = File.Create(filePath))
             using (var stream = new StreamWriter(fs))
@@ -380,7 +380,7 @@ namespace UtilitiesCustomValues
             var filePath = Path.Combine(Global.FilePathPrefix, fileName);
             var tempPath = filePath + ".tmp";
 
-            Debug.Console(0, "Attempting to write a file at path:{0}", filePath);
+            Debug.LogInformation("CustomValues", "Attempting to write a file at path:{0}", filePath);
 
             // Write to temp file first to avoid partial/corrupt writes
             using (var fs = File.Create(tempPath)) // FileMode.Create -> truncates or creates new
@@ -403,7 +403,7 @@ namespace UtilitiesCustomValues
             }
             catch (Exception ex)
             {
-                Debug.Console(0, Debug.ErrorLogLevel.Warning, "Failed replacing original file with temp: {0}", ex);
+                Debug.LogWarning("CustomValues", "Failed replacing original file with temp: {0}", ex);
                 // Fallback: attempt direct write (truncating) if temp replace failed
                 using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
                 using (var stream = new StreamWriter(fs))
