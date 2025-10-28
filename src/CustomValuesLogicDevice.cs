@@ -45,7 +45,6 @@ namespace UtilitiesCustomValues
 			}
 		}
 
-
 		private JObject _fileData;
 		private JObject FileData
 		{
@@ -68,8 +67,6 @@ namespace UtilitiesCustomValues
 
 		}
 
-
-
 		private bool UseFile
 		{
 			get
@@ -78,6 +75,13 @@ namespace UtilitiesCustomValues
 			}
 		}
 
+		/// <summary>
+        /// Constructs the legacy logic device variant used primarily for simple value storage
+        /// and bridging with delayed write semantics.
+        /// </summary>
+        /// <param name="key">Logical key for the device.</param>
+        /// <param name="name">Friendly name.</param>
+        /// <param name="config">Device configuration.</param>
 		public CustomValuesDevice(string key, string name, DeviceConfig config)
 			: base(config)
 		{
@@ -87,6 +91,7 @@ namespace UtilitiesCustomValues
 			Feedbacks = new Dictionary<string, PepperDash.Essentials.Core.Feedback>();
 		}
 
+		/// <inheritdoc />
 		public override bool CustomActivate()
 		{
 			if (!UseFile) return true;
@@ -254,7 +259,10 @@ namespace UtilitiesCustomValues
 			}
 		}
 
-
+		/// <summary>
+        /// Console helper command allowing get/set of values via: customvalues [path] ([value])
+        /// </summary>
+        /// <param name="command">Command arguments string.</param>
 		public void ConsoleCommand(string command)
 		{
 			if (string.IsNullOrEmpty(command))
@@ -293,7 +301,7 @@ namespace UtilitiesCustomValues
 			}
 		}
 
-
+		/// <inheritdoc />
 		public override void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
 		{
 			var joinMap = new EssentialsPluginBridgeJoinMapTemplate(joinStart);
@@ -401,6 +409,12 @@ namespace UtilitiesCustomValues
 
 		}
 
+		/// <summary>
+		/// Handles remote EISC online/offline events, deferring device initialization until the
+		/// EISC has remained online for a brief period.
+		/// </summary>
+		/// <param name="currentDevice">The reporting device.</param>
+		/// <param name="args">Online/offline event arguments.</param>
 		void Eisc_OnlineStatusChange(Crestron.SimplSharpPro.GenericBase currentDevice, Crestron.SimplSharpPro.OnlineOfflineEventArgs args)
 		{
 			if (args.DeviceOnLine)
