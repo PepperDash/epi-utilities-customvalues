@@ -45,7 +45,7 @@ When set false, all bridged boolean (digital) data values begin at join 101 (off
 - The plugin does not automatically re-load from disk during runtime; it uses in-memory state. To force a reload, restart the device or extend logic (future enhancement).
 
 ### Simpl Bridging
-Any exsisting value can be bridged to simpl windows using a standard EiscBridgeAdvanced and a custom join map. When bridging you must define a custom joinMap as well as the key to the joinMap in the bridge. values are automaticcly types based on their entry in the config. booleans come out as digitals, integers come out as analogs and strings come out as serials. You can dig down into a Json object using stnadard dot syntax (see example "Dict.label01"). You can also bridge to an oblect and it will propegrate the whole object as a Serial join on the bridge (see example "Dict").
+Any existing value can be bridged to simpl windows using a standard EiscBridgeAdvanced and a custom join map. When bridging you must define a custom joinMap as well as the key to the joinMap in the bridge. values are automatically typed based on their entry in the config. booleans come out as digitals, integers come out as analogs and strings come out as serials. You can dig down into a Json object using standard dot syntax (see example "Dict.label01"). You can also bridge to an object and it will propagate the whole object as a Serial join on the bridge (see example "Dict").
 
 ### Console Command
 All values can also be set and retrived using the console command "customvalues [path] ([value])".

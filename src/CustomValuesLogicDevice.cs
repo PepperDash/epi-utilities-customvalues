@@ -101,7 +101,7 @@ namespace UtilitiesCustomValues
 
 				if (File.Exists(Global.FilePathPrefix + Properties.FilePath))
 				{
-					Debug.LogVerbose(this, "Reading exsisting file");
+					Debug.LogVerbose(this, "Reading existing file");
 					FileData = JObject.Parse(FileIO.ReadDataFromFile(Properties.FilePath));
 				}
 				else
