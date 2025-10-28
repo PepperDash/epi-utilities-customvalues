@@ -44,7 +44,7 @@ namespace UtilitiesCustomValues
         private BasicTriList _trilist; // saved for control output updates
 
         // Feedback objects for control outputs
-        private BoolFeedback _savingReadyFeedback; // join 3
+        private BoolFeedback _savingReadyFeedback; // join 2
 
         /// <summary>
         /// Constructs the controller, loading initial data either from a file (when a filePath
