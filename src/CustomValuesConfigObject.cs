@@ -38,7 +38,7 @@ namespace UtilitiesCustomValues
 		public bool LegacyDigitalJoinBehavior { get; set; }
 
 		/// <summary>
-		/// When true, bridge-originated value changes while EnableSaving is LOW will update in-memory JSON (but still not persist to file). Default TRUE now (legacy compatibility) — previously default was false. When false, changes while disabled are ignored.
+		/// When true, bridge-originated value changes while EnableSaving is LOW will update in-memory JSON (but still not persist to file). Default TRUE now (legacy compatibility). When false, changes while disabled are ignored.
 		/// Optional in config; missing property will assume TRUE for backward compatibility with older deployments that expect legacy behavior of tracking updates in memory even while saving is disabled.
 		/// </summary>
         [JsonProperty("trackChangesWhileSavingDisabled", DefaultValueHandling = DefaultValueHandling.Populate)]
