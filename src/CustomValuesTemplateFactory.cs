@@ -15,12 +15,9 @@ namespace UtilitiesCustomValues
 		/// </summary>
 		public EssentialsPluginFactoryLogicDeviceTemplate()
 		{
-			// Set the minimum Essentials Framework Version
-#if SERIES4			
-			MinimumEssentialsFrameworkVersion = "2.4.6";
-#else
-			MinimumEssentialsFrameworkVersion = "1.11.1";
-#endif
+			// Set the minimum Essentials Framework Version			
+			MinimumEssentialsFrameworkVersion = "2.15.0";
+
 			// In the constructor we initialize the list with the typenames that will build an instance of this device
 			TypeNames = new List<string>() { "CustomValues" };
 		}
@@ -28,13 +25,12 @@ namespace UtilitiesCustomValues
 		/// <summary>
 		/// Builds and returns an instance of EssentialsPluginTemplateLogicDevice
 		/// </summary>
+		/// <inheritdoc />
 		public override EssentialsDevice BuildDevice(PepperDash.Essentials.Core.Config.DeviceConfig dc)
 		{
-
-			Debug.Console(1, "[{0}] Factory Attempting to create new device from type: {1}", dc.Key, dc.Type);
+			Debug.LogDebug("CustomValues", "[{0}] Factory Attempting to create new device from type: {1}", dc.Key, dc.Type);
 
 			return new CustomValuesController(dc);
-
 		}
 	}
 }
