@@ -44,7 +44,7 @@ namespace UtilitiesCustomValues
         private BasicTriList _trilist; // saved for control output updates
 
         // Feedback objects for control outputs
-        private BoolFeedback _savingReadyFeedback; // join 2
+        private BoolFeedback _savingReadyFeedback;
 
         /// <summary>
         /// Constructs the controller, loading initial data either from a file (when a filePath
@@ -155,7 +155,7 @@ namespace UtilitiesCustomValues
                         _savingReady = _pluginReady && _enableSaving;
                         _savingReadyFeedback.FireUpdate();
                         // If tracked changes occurred while disabled (only tracked when flag true), flush them now
-                        if (_props.TrackChangesWhileSavingDisabled && _dirtyWhileDisabled)
+                        if (_dirtyWhileDisabled)
                         {
                             _dirtyWhileDisabled = false;
                             _saveTimer.Reset(250); // quick write after enabling
@@ -198,11 +198,11 @@ namespace UtilitiesCustomValues
                         {
                             trilist.SetUShortSigAction(@join, x => WithLock(() =>
                             {
-                                if (!_enableSaving && !_props.TrackChangesWhileSavingDisabled) return; // ignore while disabled
+                                // Always track changes in memory when saving disabled; only persist when enabled
                                 data.SelectToken(path).Replace(x);
                                 if (_enableSaving)
                                     _saveTimer.Reset(1000);
-                                else if (_props.TrackChangesWhileSavingDisabled)
+                                else
                                     _dirtyWhileDisabled = true;
                             }));
 
@@ -220,11 +220,10 @@ namespace UtilitiesCustomValues
                         {
                             trilist.SetStringSigAction(@join, x => WithLock(() =>
                             {
-                                if (!_enableSaving && !_props.TrackChangesWhileSavingDisabled) return;
                                 data.SelectToken(path).Replace(x);
                                 if (_enableSaving)
                                     _saveTimer.Reset(1000);
-                                else if (_props.TrackChangesWhileSavingDisabled)
+                                else
                                     _dirtyWhileDisabled = true;
                             }));
 
@@ -242,11 +241,10 @@ namespace UtilitiesCustomValues
                         {
                             trilist.SetStringSigAction(@join, x =>
                             {
-                                if (!_enableSaving && !_props.TrackChangesWhileSavingDisabled) return;
                                 data.SelectToken(path).Replace(x);
                                 if (_enableSaving)
                                     _saveTimer.Reset(1000);
-                                else if (_props.TrackChangesWhileSavingDisabled)
+                                else
                                     _dirtyWhileDisabled = true;
                             });
 
@@ -262,19 +260,15 @@ namespace UtilitiesCustomValues
                         }
                     case JTokenType.Boolean:
                         {
-                            // Apply new digital join offset unless legacy behavior enabled
-                            if (!_props.LegacyDigitalJoinBehavior)
-                            {
-                                join = (ushort)(DigitalJoinBaseOffset + index - 1);
-                            }
+                            // Always apply digital join offset (legacy behavior removed)
+                            join = (ushort)(DigitalJoinBaseOffset + index - 1);
 
                             trilist.SetBoolSigAction(@join, x =>
                             {
-                                if (!_enableSaving && !_props.TrackChangesWhileSavingDisabled) return;
                                 data.SelectToken(path).Replace(x);
                                 if (_enableSaving)
                                     _saveTimer.Reset(1000);
-                                else if (_props.TrackChangesWhileSavingDisabled)
+                                else
                                     _dirtyWhileDisabled = true;
                             });
 

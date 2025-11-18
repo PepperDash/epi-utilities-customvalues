@@ -11,19 +11,13 @@ Beginning with the updated implementation (post Oct 2025 changes), the plugin in
 ### Control Digital Joins (SIMPL <-> Plugin)
 | Join | Direction | Name | Purpose |
 |------|-----------|------|---------|
-| 1 | Input | EnableSaving | Hold HIGH to allow persistence of changes. When LOW, saving disabled; if `trackChangesWhileSavingDisabled` is true changes are staged in memory, otherwise ignored. |
+| 1 | Input | EnableSaving | Hold HIGH to allow persistence of changes. When LOW, saving disabled; changes are still staged in memory and flushed when re-enabled. |
 | 2 | Output | SavingReadyFb | HIGH when plugin is internally mapped/ready AND EnableSaving asserted. LOW otherwise. |
 
 Control join metadata (capabilities and descriptions) is now declared in the advanced join map (`EssentialsPluginBridgeJoinMapTemplate`). Input and output do NOT share join 1; using distinct join 2 for feedback avoids collisions with some bridge pathways that do not permit a single digital to act as both directions simultaneously.
 
 ### Digital Join Offset (Data Boolean Join Remapping)
-DEFAULTS UPDATED (Oct 2025+): `legacyDigitalJoinBehavior` now defaults to TRUE (you can omit it). When TRUE, boolean data joins are NOT offset and use their configured join numbers relative to `joinStart` (legacy behavior).
-
-To opt-in to the safer high-range offset, explicitly set:
-```json
-"legacyDigitalJoinBehavior": false
-```
-When set false, all bridged boolean (digital) data values begin at join 101 (offset base) to reduce collision risk with low-number control joins. Integer, string, and object-based values always use their configured join numbering relative to `joinStart`.
+Behavior Simplified (Oct 2025+): Boolean (digital) data joins are ALWAYS offset starting at join 101. The previous configuration property `legacyDigitalJoinBehavior` has been removed. Integer, string, and object-based values continue to use their configured join numbering relative to `joinStart`.
 
 ### Behavior Sequence Summary
 1. Plugin loads JSON data from file or config `data` object.
@@ -32,15 +26,12 @@ When set false, all bridged boolean (digital) data values begin at join 101 (off
     - SavingReadyFb set HIGH (plugin ready + saving enabled).
 4. Subsequent value changes on the bridge:
     - If EnableSaving HIGH: changes schedule a save (debounced ~1s).
-    - If EnableSaving LOW AND `trackChangesWhileSavingDisabled` true: changes update RAM/feedbacks only; flagged dirty until re-enabled.
-    - If EnableSaving LOW AND `trackChangesWhileSavingDisabled` false: changes are ignored entirely (no staging, no feedback updates).
+    - If EnableSaving LOW: changes update RAM/feedbacks only; flagged dirty until re-enabled (tracking is always on).
 5. When EnableSaving transitions LOW -> HIGH again: if tracking flag true pending staged changes are flushed (250ms debounce) and SavingReadyFb returns HIGH.
 
 ### Notes & Edge Cases
 - Turning EnableSaving LOW immediately drops SavingReadyFb, suppressing further saves.
-- Analog/String/Object changes while disabled:
-    - If `trackChangesWhileSavingDisabled` true (DEFAULT): not persisted but remain staged and will be saved after enabling.
-    - If `trackChangesWhileSavingDisabled` false: ignored completely.
+- Analog/String/Object changes while disabled: not persisted but remain staged and will be saved after enabling (tracking always on).
 - Boolean join offset only affects JTokenType.Boolean mapped joins.
 - The plugin does not automatically re-load from disk during runtime; it uses in-memory state. To force a reload, restart the device or extend logic (future enhancement).
 
@@ -76,8 +67,6 @@ All values can also be set and retrived using the console command "customvalues 
                     "boolValue": true,
                     "stringValue": "SomeString!"
                 },
-                "legacyDigitalJoinBehavior": true,
-                "trackChangesWhileSavingDisabled": true
             }
         },
         {
@@ -135,7 +124,7 @@ All values can also be set and retrived using the console command "customvalues 
 ```
 
 ### Updated Join Mapping Example (Boolean Offset)
-If you explicitly set `"legacyDigitalJoinBehavior": false` and `joinStart` is 1, a boolean path configured with `"joinNumber": 1` will map to digital join **101** on the bridge instead of 1. (When the property is omitted or true, it maps directly to join 1.) Control joins 1-2 remain reserved.
+A `joinStart` of 1 will map digital joins starting at **101**, analog joins at **1**, and serial joins at **1** on the bridge. Bridge digital joins 1-2 remain reserved.
 
 ### Minimal Config Without File (In-Memory Only)
 ```json

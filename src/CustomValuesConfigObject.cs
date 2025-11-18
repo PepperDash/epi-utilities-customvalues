@@ -29,20 +29,8 @@ namespace UtilitiesCustomValues
 		[JsonProperty("data")]
 		public JObject Data { get; set; }
 
-		/// <summary>
-		/// When true, preserves legacy digital join numbering (no offset). Default TRUE now (legacy compatibility) => digitals start at 101 only when this is false.
-		/// Optional in config; missing property will assume TRUE for backward compatibility with older Essentials projects that did not include this property.
-		/// </summary>
-        [JsonProperty("legacyDigitalJoinBehavior", DefaultValueHandling = DefaultValueHandling.Populate)]
-		[System.ComponentModel.DefaultValue(true)]
-		public bool LegacyDigitalJoinBehavior { get; set; }
-
-		/// <summary>
-		/// When true, bridge-originated value changes while EnableSaving is LOW will update in-memory JSON (but still not persist to file). Default TRUE now (legacy compatibility). When false, changes while disabled are ignored.
-		/// Optional in config; missing property will assume TRUE for backward compatibility with older deployments that expect legacy behavior of tracking updates in memory even while saving is disabled.
-		/// </summary>
-        [JsonProperty("trackChangesWhileSavingDisabled", DefaultValueHandling = DefaultValueHandling.Populate)]
-		[System.ComponentModel.DefaultValue(true)]
-		public bool TrackChangesWhileSavingDisabled { get; set; }
+		// NOTE: legacyDigitalJoinBehavior and trackChangesWhileSavingDisabled removed.
+		// Behavior is now fixed: boolean data joins always offset (start at 101) and
+		// changes while saving disabled are always tracked in memory and flushed when saving is re-enabled.
 	}
 }
