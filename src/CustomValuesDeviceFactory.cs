@@ -8,7 +8,7 @@ namespace PepperDash.Essentials.Plugins
 	/// <summary>
 	/// Plugin device factory for the CustomValues logic device
 	/// </summary>
-	public class CustomValuesDeviceFactory : EssentialsPluginDeviceFactory<CustomValuesController>
+	public class CustomValuesDeviceFactory : EssentialsPluginDeviceFactory<CustomValuesDevice>
 	{
 		/// <summary>
 		/// Plugin device factory constructor
@@ -23,14 +23,14 @@ namespace PepperDash.Essentials.Plugins
 		}
 
 		/// <summary>
-		/// Builds and returns an instance of CustomValuesController
+		/// Builds and returns an instance of CustomValuesDevice
 		/// </summary>
 		/// <inheritdoc />
 		public override EssentialsDevice BuildDevice(PepperDash.Essentials.Core.Config.DeviceConfig dc)
 		{
 			Debug.LogDebug("CustomValues: factory attempting to create device {Key} from type {Type}", dc.Key, dc.Type);
 
-			return new CustomValuesController(dc);
+			return new CustomValuesDevice(dc);
 		}
 	}
 }

@@ -15,12 +15,12 @@ using Feedback = PepperDash.Essentials.Core.Feedback;
 namespace PepperDash.Essentials.Plugins
 {
     /// <summary>
-    /// Controller implementation for the CustomValues plugin. Handles JSON data lifecycle
+    /// Device implementation for the CustomValues plugin. Handles JSON data lifecycle
     /// (loading, mapping, staging, and persistence) and exposes bridge joins for both control
     /// gating (EnableSaving) and readiness feedback (SavingReadyFb). Boolean data join numbering
     /// optionally applies an offset unless legacy behavior is enabled.
     /// </summary>
-    public class CustomValuesController : ReconfigurableDevice, IBridgeAdvanced
+    public class CustomValuesDevice : ReconfigurableDevice, IBridgeAdvanced
     {
         private readonly CustomValuesPropertiesConfig _props;
         private readonly CTimer _saveTimer;
@@ -47,11 +47,11 @@ namespace PepperDash.Essentials.Plugins
         private BoolFeedback _savingReadyFeedback;
 
         /// <summary>
-        /// Constructs the controller, loading initial data either from a file (when a filePath
+        /// Constructs the device, loading initial data either from a file (when a filePath
         /// is supplied) or the in-config data object, seeding the file if necessary.
         /// </summary>
         /// <param name="config">Essentials device configuration object containing plugin properties.</param>
-        public CustomValuesController(DeviceConfig config)
+        public CustomValuesDevice(DeviceConfig config)
             : base(config)
         {
             _saveTimer = new CTimer(_ => WithLock(() =>
