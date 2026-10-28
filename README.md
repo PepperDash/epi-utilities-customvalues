@@ -1,72 +1,94 @@
-# Internal Essentials Plugin Template (c) 2022
+![PepperDash Essentials Plugin Logo](/images/essentials-plugin-blue.png)
+
+![PepperDash Essentials](https://img.shields.io/badge/PepperDash%20Essentials-≥%20v3.0.0-blue)
+![.NET](https://img.shields.io/badge/.NET-8-512BD4)
+![Crestron](https://img.shields.io/badge/Crestron-4--Series-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+# Essentials CustomValues Plugin (c) 2026
+
 ## License
+
 Provided under MIT license
 
 ## Overview
-CustomValues EPI is a plugin that will allow one to read and write Json config values. Values can be stored in the DEvice config "Data" object or in a seperate file.
 
-## New Control and Behavior (Extended Saving Workflow)
-Beginning with the updated implementation (post Oct 2025 changes), the plugin introduces explicit control joins to manage when values are eligible to be saved.
+The CustomValues plugin reads and writes JSON values and bridges them to SIMPL Windows. Values are stored either in the device config `data` object (in memory) or in a separate JSON file that the plugin creates and keeps up to date.
+
+## Control and Saving Behavior
+
+The plugin uses explicit control joins to manage when values are eligible to be saved.
 
 ### Control Digital Joins (SIMPL <-> Plugin)
+
 | Join | Direction | Name | Purpose |
 |------|-----------|------|---------|
-| 1 | Input | EnableSaving | Hold HIGH to allow persistence of changes. When LOW, saving disabled; changes are still staged in memory and flushed when re-enabled. |
-| 2 | Output | SavingReadyFb | HIGH when plugin is internally mapped/ready AND EnableSaving asserted. LOW otherwise. |
+| 1 | Input | EnableSaving | Hold HIGH to allow persistence of changes. When LOW, saving is disabled; changes are still staged in memory and flushed when re-enabled. |
+| 2 | Output | SavingReadyFb | HIGH when the plugin is mapped/ready AND EnableSaving is asserted. LOW otherwise. |
 
-Control join metadata (capabilities and descriptions) is now declared in the advanced join map (`EssentialsPluginBridgeJoinMapTemplate`). Input and output do NOT share join 1; using distinct join 2 for feedback avoids collisions with some bridge pathways that do not permit a single digital to act as both directions simultaneously.
+Control join metadata (capabilities and descriptions) is declared in the advanced join map (`CustomValuesBridgeJoinMap`). Input and output do NOT share join 1; using a distinct join 2 for feedback avoids collisions with bridge pathways that do not permit a single digital to act in both directions.
 
 ### Digital Join Offset (Data Boolean Join Remapping)
-Behavior Simplified (Oct 2025+): Boolean (digital) data joins are ALWAYS offset starting at join 101. The previous configuration property `legacyDigitalJoinBehavior` has been removed. Integer, string, and object-based values continue to use their configured join numbering relative to `joinStart`.
+
+Boolean (digital) data joins are ALWAYS offset, starting at join 101. Integer and string values use their configured join numbers relative to `joinStart`.
 
 ### Behavior Sequence Summary
-1. Plugin loads JSON data from file or config `data` object.
-2. `LinkToApi` maps joins; control outputs (SavingReadyFb) start LOW.
+
+1. The plugin loads JSON data from the file or the config `data` object.
+2. `LinkToApi` maps joins; the control output (SavingReadyFb) starts LOW.
 3. SIMPL asserts EnableSaving HIGH:
-    - SavingReadyFb set HIGH (plugin ready + saving enabled).
+    - SavingReadyFb is set HIGH (plugin ready + saving enabled).
 4. Subsequent value changes on the bridge:
-    - If EnableSaving HIGH: changes schedule a save (debounced ~1s).
-    - If EnableSaving LOW: changes update RAM/feedbacks only; flagged dirty until re-enabled (tracking is always on).
-5. When EnableSaving transitions LOW -> HIGH again: if tracking flag true pending staged changes are flushed (250ms debounce) and SavingReadyFb returns HIGH.
+    - If EnableSaving is HIGH: changes schedule a save (debounced ~1s).
+    - If EnableSaving is LOW: changes update RAM/feedbacks only and are flagged dirty until saving is re-enabled.
+5. When EnableSaving transitions LOW -> HIGH again: staged changes are flushed (250ms debounce) and SavingReadyFb returns HIGH.
 
 ### Notes & Edge Cases
+
 - Turning EnableSaving LOW immediately drops SavingReadyFb, suppressing further saves.
-- Analog/String/Object changes while disabled: not persisted but remain staged and will be saved after enabling (tracking always on).
-- Boolean join offset only affects JTokenType.Boolean mapped joins.
-- The plugin does not automatically re-load from disk during runtime; it uses in-memory state. To force a reload, restart the device or extend logic (future enhancement).
+- Analog and serial changes made while saving is disabled are not persisted, but remain staged and are saved after enabling.
+- The boolean join offset only affects boolean values.
+- The plugin does not re-load from disk at runtime; it uses in-memory state. To force a reload, restart the program.
 
-### Simpl Bridging
-Any existing value can be bridged to simpl windows using a standard EiscBridgeAdvanced and a custom join map. When bridging you must define a custom joinMap as well as the key to the joinMap in the bridge. values are automatically typed based on their entry in the config. booleans come out as digitals, integers come out as analogs and strings come out as serials. You can dig down into a Json object using standard dot syntax (see example "Dict.label01"). You can also bridge to an object and it will propagate the whole object as a Serial join on the bridge (see example "Dict").
+## SIMPL Bridging
 
-### Console Command
-All values can also be set and retrived using the console command "customvalues [path] ([value])".
+Any existing value can be bridged to SIMPL Windows using a standard `eiscApiAdvanced` bridge and a custom join map. When bridging you must define a custom join map, as well as the key to that join map in the bridge.
 
-### Plugin Configuration Object
+Each join map entry is a JSON path to a **single value**. The join type comes from the value's type in the data:
+
+| Value type | Join type | Join number |
+|------------|-----------|-------------|
+| Boolean | Digital | `100 + joinNumber` (offset, see above) |
+| Integer | Analog | `joinStart + joinNumber - 1` |
+| String | Serial | `joinStart + joinNumber - 1` |
+
+Use dot syntax to reach a value nested inside an object, for example `"Dict.label01"`.
+
+Paths that point to any other kind of value, such as a whole object (`"Dict"`), an array or a decimal number, are not mapped. The plugin logs `Cannot map path ... unsupported type` and skips that entry.
+
+## Plugin Configuration Object
+
+`filePath` is relative to the program's file path prefix (for example `/user/program1/`). When `filePath` is set, the `data` object is ignored and values are read from and saved to that file. If the file doesn't exist yet, it is created from the optional `seed` object.
+
 ```json
 {
-    "devices":
-    [
+    "devices": [
         {
             "key": "CustomValues",
             "uid": 1,
             "name": "Custom Values Essentials Plugin",
             "type": "CustomValues",
             "group": "plugin",
-            "properties":
-            {
-                "FilePath-EXAMPLE": "/user/program1/testFile.test",
-                "FilePathComment": "If FilePath (without -EXAMPLE) is included it will be used and Data object below will be ignored",
-                "Data":
-                {
-                    "Dict":
-                        {
-                            "label01": "MainSourceSelector",
-                            "instanceTag": "NAMED_CONTROL"
-                        },
+            "properties": {
+                "data": {
+                    "Dict": {
+                        "label01": "MainSourceSelector",
+                        "instanceTag": "NAMED_CONTROL"
+                    },
                     "analogValue": 37,
                     "boolValue": true,
                     "stringValue": "SomeString!"
-                },
+                }
             }
         },
         {
@@ -75,20 +97,16 @@ All values can also be set and retrived using the console command "customvalues 
             "name": "CustomValuesBridge",
             "group": "api",
             "type": "eiscApiAdvanced",
-            "properties":
-            {
-                "control":
-                {
-                    "tcpSshProperties":
-                    {
+            "properties": {
+                "control": {
+                    "tcpSshProperties": {
                         "address": "127.0.0.2",
                         "port": 0
                     },
                     "ipid": "03",
                     "method": "ipidTcp"
                 },
-                "devices":
-                [
+                "devices": [
                     {
                         "deviceKey": "CustomValues",
                         "joinStart": 1,
@@ -98,35 +116,51 @@ All values can also be set and retrived using the console command "customvalues 
             }
         }
     ],
-    "joinMaps":
-    {
-        "customValues":
-        {
-            "Dict":
-            {
+    "joinMaps": {
+        "customValues": {
+            "stringValue": {
                 "joinNumber": 1
             },
-            "Dict.label01":
-            {
+            "Dict.label01": {
                 "joinNumber": 2
             },
-            "analogValue":
-            {
+            "analogValue": {
                 "joinNumber": 1
             },
-            "boolValue":
-            {
+            "boolValue": {
                 "joinNumber": 1
             }
         }
-    },
+    }
 }
 ```
 
-### Updated Join Mapping Example (Boolean Offset)
-A `joinStart` of 1 will map digital joins starting at **101**, analog joins at **1**, and serial joins at **1** on the bridge. Bridge digital joins 1-2 remain reserved.
+### Join Mapping Example (Boolean Offset)
+
+With a `joinStart` of 1, the example above maps `boolValue` to digital **101**, `analogValue` to analog **1**, `stringValue` to serial **1** and `Dict.label01` to serial **2**. Bridge digital joins 1-2 are reserved for the control joins.
+
+### File-Backed Config
+
+```json
+{
+    "key": "CustomValues",
+    "uid": 1,
+    "name": "Custom Values Essentials Plugin",
+    "type": "CustomValues",
+    "group": "plugin",
+    "properties": {
+        "filePath": "customValues.json",
+        "seed": {
+            "analogValue": 37,
+            "boolValue": true,
+            "stringValue": "SomeString!"
+        }
+    }
+}
+```
 
 ### Minimal Config Without File (In-Memory Only)
+
 ```json
 {
     "devices": [
@@ -144,19 +178,53 @@ A `joinStart` of 1 will map digital joins starting at **101**, analog joins at *
 }
 ```
 
-## Nuget
-You must have nuget.exe installed and in the PATH environment variable to use the following command. Nuget.exe is available at nuget.org.  It is recommended to use [Scoop](https://scoop.sh/) to install nuget using the command:
+## Dependencies
+
+* Install the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and PowerShell 7+ (`pwsh`). `global.json` selects an installed stable .NET 8 SDK, rolling forward to its latest installed feature band/patch.
+* The [Essentials](https://github.com/PepperDash/Essentials) dependency is pinned in `src/epi-utilities-customvalues.4Series.csproj` to **3.0.0-rc.19**, a prerelease available from [nuget.org](https://www.nuget.org/packages/PepperDashEssentials/3.0.0-rc.19). No authenticated feed is required.
+* Deployment requires a .NET 8-capable Crestron 4-Series/VC-4 environment running the matching Essentials v3 runtime. A successful build does not verify firmware compatibility or plugin loading on hardware.
+
+### Installing Dependencies and Building
+
+Run from the repository root; `dotnet restore` installs the pinned dependencies:
+
+```powershell
+dotnet restore epi-utilities-customvalues.4Series.sln
+dotnet build epi-utilities-customvalues.4Series.sln --no-restore --configuration Release
+dotnet pack src/epi-utilities-customvalues.4Series.csproj --no-build --configuration Release
 ```
-scoop install nuget
+
+Builds generate a CPLZ and NuGet package in `output/`. The CPLZ includes the plugin output only, not the host-provided Essentials/Crestron dependencies (`ExcludeAssets=runtime`).
+
+## Git Hooks (Husky.Net)
+
+This repo uses [Husky.Net](https://alirezanet.github.io/Husky.Net/) to run a `pre-commit` hook. The hook runs `.github/scripts/Update-ReadmeBadges.ps1`, which keeps the `.NET` and `PepperDash Essentials` badges at the top of this README in sync with the project:
+
+* `.NET` badge - `TargetFramework` in `src/*.4Series.csproj`
+* `PepperDash Essentials` badge - the highest `MinimumEssentialsFrameworkVersion` in `src/*Factory.cs`
+
+If the badges change, `README.md` is re-staged automatically so the update is part of your commit. A warning is printed if the `PepperDashEssentials` package version in the csproj differs from `MinimumEssentialsFrameworkVersion`. While the package is pinned to `3.0.0-rc.19` and the runtime minimum is the numeric `3.0.0`, that warning is expected; it does not make `-Check` fail when the badges are current.
+
+### Setup
+
+The hook is installed automatically the first time you do any of the following in a fresh clone:
+
+* Open the solution in Visual Studio, or run `dotnet restore` / `dotnet build`
+* Open the folder in VS Code and allow the "Install git hooks" automatic task
+
+To install it manually:
+
 ```
-### Manually Installing Dependencies
-To install dependencies once nuget.exe is installed, after cloning the template or creating your template repo, run the following command:
+dotnet tool restore
+dotnet husky install
 ```
-nuget install .\packages.config -OutputDirectory .\packages -excludeVersion
-```
-Verify you are using the proper "\\" or "/" per the console used.  To verify that the packages installed correctly, open Essentials and make sure that all references are found, then try and build it.  **This issue will be found when using WSL on Windows10.**
-Once the nuget package has been installed locally you will need to update your project references.
-1. Right click on **References**
-2. Select **Add Reference**
-3. Browse to the **packages** folder
-4. Select the required references.
+
+Verify with `git config core.hooksPath`, which should print `.husky`.
+
+### Usage
+
+* Commit as usual; the hook runs on every `git commit`.
+* Run it on demand: `dotnet husky run`
+* Check without modifying files (useful for CI): `pwsh -NoProfile -File .github/scripts/Update-ReadmeBadges.ps1 -Check`
+* Skip the hook for a single commit: `git commit --no-verify`
+* Skip the automatic install on restore: set the `HUSKY=0` environment variable. It is also skipped when `CI=true`.
