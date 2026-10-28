@@ -1,12 +1,12 @@
 ﻿using PepperDash.Essentials.Core;
 using PepperDash.Essentials.Core.Bridges;
 
-namespace UtilitiesCustomValues
+namespace PepperDash.Essentials.Plugins
 {
 	/// <summary>
 	/// Plugin device Bridge Join Map
 	/// </summary>
-	public class EssentialsPluginBridgeJoinMapTemplate : JoinMapBaseAdvanced
+	public class CustomValuesBridgeJoinMap : JoinMapBaseAdvanced
 	{
 		#region Control Joins
         /// <summary>
@@ -40,8 +40,8 @@ namespace UtilitiesCustomValues
 		/// Plugin device BridgeJoinMap constructor
 		/// </summary>
 		/// <param name="joinStart">This will be the join it starts on the EISC bridge</param>
-		public EssentialsPluginBridgeJoinMapTemplate(uint joinStart)
-			: base(joinStart, typeof(EssentialsPluginBridgeJoinMapTemplate))
+		public CustomValuesBridgeJoinMap(uint joinStart)
+			: base(joinStart, typeof(CustomValuesBridgeJoinMap))
 		{
 		}
 	}

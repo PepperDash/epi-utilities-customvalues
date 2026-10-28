@@ -1,5 +1,4 @@
 using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,19 +9,20 @@ using PepperDash.Essentials.Core.Config;
 using PepperDash.Essentials.Core.Devices;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Feedback = PepperDash.Essentials.Core.Feedback;
 
-namespace UtilitiesCustomValues
+namespace PepperDash.Essentials.Plugins
 {
     /// <summary>
-    /// Controller implementation for the CustomValues plugin. Handles JSON data lifecycle
+    /// Device implementation for the CustomValues plugin. Handles JSON data lifecycle
     /// (loading, mapping, staging, and persistence) and exposes bridge joins for both control
     /// gating (EnableSaving) and readiness feedback (SavingReadyFb). Boolean data join numbering
     /// optionally applies an offset unless legacy behavior is enabled.
     /// </summary>
-    public class CustomValuesController : ReconfigurableDevice, IBridgeAdvanced
+    public class CustomValuesDevice : ReconfigurableDevice, IBridgeAdvanced
     {
-        private readonly CustomValuesConfigObject _props;
+        private readonly CustomValuesPropertiesConfig _props;
         private readonly CTimer _saveTimer;
         private readonly CCriticalSection _sync = new CCriticalSection();
 
@@ -47,11 +47,11 @@ namespace UtilitiesCustomValues
         private BoolFeedback _savingReadyFeedback;
 
         /// <summary>
-        /// Constructs the controller, loading initial data either from a file (when a filePath
+        /// Constructs the device, loading initial data either from a file (when a filePath
         /// is supplied) or the in-config data object, seeding the file if necessary.
         /// </summary>
         /// <param name="config">Essentials device configuration object containing plugin properties.</param>
-        public CustomValuesController(DeviceConfig config)
+        public CustomValuesDevice(DeviceConfig config)
             : base(config)
         {
             _saveTimer = new CTimer(_ => WithLock(() =>
@@ -73,12 +73,12 @@ namespace UtilitiesCustomValues
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning(this, "Failed to save custom values data: '{0}'", ex);
+                    Debug.LogWarning(ex, this, "Failed to save custom values data");
                 }
             }),
                 Timeout.Infinite);
 
-            _props = config.Properties.ToObject<CustomValuesConfigObject>();
+            _props = config.Properties.ToObject<CustomValuesPropertiesConfig>();
 
             data = string.IsNullOrEmpty(_props.FilePath)
                 ? _props.Data
@@ -109,7 +109,13 @@ namespace UtilitiesCustomValues
         /// <param name="bridge">Bridge instance (may be null in some contexts).</param>
         public void LinkToApi(BasicTriList trilist, uint joinStart, string joinMapKey, EiscApiAdvanced bridge)
         {
-            var joinMap = new EssentialsPluginBridgeJoinMapTemplate(joinStart);
+            var joinMap = new CustomValuesBridgeJoinMap(joinStart);
+
+            // Adds the join map to the bridge's collection so it is reported by the console
+            if (bridge != null)
+            {
+                bridge.AddJoinMap(Key, joinMap);
+            }
 
             if (data == null)
                 throw new NullReferenceException("LinkToApi: data is null.  Check file path or a 'data' object is defined in the config");
@@ -237,27 +243,6 @@ namespace UtilitiesCustomValues
 
                             break;
                         }
-                    case JTokenType.Object:
-                        {
-                            trilist.SetStringSigAction(@join, x =>
-                            {
-                                data.SelectToken(path).Replace(x);
-                                if (_enableSaving)
-                                    _saveTimer.Reset(1000);
-                                else
-                                    _dirtyWhileDisabled = true;
-                            });
-
-                            var feedback = new StringFeedback(() => data.SelectToken(path).Value<string>());
-                            feedback.LinkInputSig(trilist.StringInput[@join]);
-                            _allFeedbacks.Add(feedback);
-                            feedback.FireUpdate();
-                            feedback.OutputChange +=
-                                (sender, args) =>
-                                    Debug.LogDebug(this, "Value for path:{0} updated to {1}", path, args.StringValue);
-
-                            break;
-                        }
                     case JTokenType.Boolean:
                         {
                             // Always apply digital join offset (legacy behavior removed)
@@ -315,7 +300,7 @@ namespace UtilitiesCustomValues
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(this, "Caught an exception within the lock:{0}", ex);
+                Debug.LogWarning(ex, this, "Caught an exception within the lock");
                 throw;
             }
             finally
@@ -334,7 +319,7 @@ namespace UtilitiesCustomValues
         private static JObject SeedData(string fileName, JObject seed)
         {
             var filePath = Path.Combine(Global.FilePathPrefix, fileName);
-            Debug.LogInformation("CustomValues", "Attemping to find a file at path:{0}", filePath);
+            Debug.LogInformation("CustomValues: attempting to find a file at path {FilePath}", filePath);
 
             if (File.Exists(filePath))
             {
@@ -346,7 +331,7 @@ namespace UtilitiesCustomValues
                 }
             }
 
-            Debug.LogInformation("CustomValues", "Didn't find a file at path:{0}, creating...", filePath);
+            Debug.LogInformation("CustomValues: didn't find a file at path {FilePath}, creating...", filePath);
             var dataToSeed = seed ?? new JObject();
             using (var fs = File.Create(filePath))
             using (var stream = new StreamWriter(fs))
@@ -373,7 +358,7 @@ namespace UtilitiesCustomValues
             var filePath = Path.Combine(Global.FilePathPrefix, fileName);
             var tempPath = filePath + ".tmp";
 
-            Debug.LogInformation("CustomValues", "Attempting to write a file at path:{0}", filePath);
+            Debug.LogInformation("CustomValues: attempting to write a file at path {FilePath}", filePath);
 
             // Write to temp file first to avoid partial/corrupt writes
             using (var fs = File.Create(tempPath)) // FileMode.Create -> truncates or creates new
@@ -396,7 +381,7 @@ namespace UtilitiesCustomValues
             }
             catch (Exception ex)
             {
-                Debug.LogWarning("CustomValues", "Failed replacing original file with temp: {0}", ex);
+                Debug.LogWarning(ex, "CustomValues: failed replacing original file with temp file");
                 // Fallback: attempt direct write (truncating) if temp replace failed
                 using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
                 using (var stream = new StreamWriter(fs))

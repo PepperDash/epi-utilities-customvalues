@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
-namespace UtilitiesCustomValues
+namespace PepperDash.Essentials.Plugins
 {
 	/// <summary>
 	/// Plugin device configuration object
 	/// </summary>
-	public class CustomValuesConfigObject
+	public class CustomValuesPropertiesConfig
 	{
         /// <summary>
         /// Optional seed object written to disk if a file path is provided and the file does not yet exist.

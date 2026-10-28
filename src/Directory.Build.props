@@ -5,8 +5,8 @@
     <Authors>PepperDash Technologies</Authors>
     <Company>PepperDash Technologies</Company>
     <Product>PepperDash Essentials Plugin</Product>
-    <Copyright>Copyright © 2025</Copyright>
-    <RepositoryUrl>https://github.com/PepperDash/epi-utilities-devicemonitor.git</RepositoryUrl>
+    <Copyright>Copyright © 2026</Copyright>
+    <RepositoryUrl>https://github.com/PepperDash/epi-utilities-customvalues.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Crestron; 4series</PackageTags>
     <PackageOutputPath>../output</PackageOutputPath>
